@@ -520,11 +520,11 @@ function EnhanceForm({
       <UploadForm onFile={onFile} currentFile={file} />
 
       <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 text-sm text-indigo-900 leading-relaxed">
-        Мы автоматически:
+        We&apos;ll automatically:
         <ul className="mt-1.5 ml-1 space-y-0.5 text-indigo-800">
-          <li>· уберём фон</li>
-          <li>· улучшим свет</li>
-          <li>· повысим резкость</li>
+          <li>· remove the background</li>
+          <li>· fix the lighting</li>
+          <li>· sharpen the details</li>
         </ul>
       </div>
 
