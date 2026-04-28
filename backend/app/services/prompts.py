@@ -156,6 +156,58 @@ def build_enhance_prompt(wishes: str) -> str:
     return "\n\n".join(parts)
 
 
+def build_fat_maker_prompt(wishes: str, fatness: int) -> str:
+    """Build a 'fat maker' joke prompt — friendly weight-gain photo edit.
+
+    The user's friend's photo is provided as the first inline image.
+
+    Args:
+        wishes: Optional free-text user note.
+        fatness: 1–10 intensity (1 = barely noticeable, 10 = extreme cartoonish).
+    """
+    fatness = max(1, min(10, int(fatness)))
+
+    if fatness <= 3:
+        intensity = (
+            "Subtle weight gain — slightly fuller cheeks and a softer jawline, "
+            "minimal change to body shape. The result should still look like a real, "
+            "plausible photo of the same person."
+        )
+    elif fatness <= 7:
+        intensity = (
+            "Moderate, clearly visible weight gain — noticeably rounder face, "
+            "double-chin starting to form, fuller arms, broader torso, fuller cheeks. "
+            "Still photo-realistic and recognisable as the same person."
+        )
+    else:
+        intensity = (
+            "Extreme cartoon-level weight gain — very round face and cheeks, prominent "
+            "double chin, much larger torso and arms, fingers slightly puffier. "
+            "Push toward humorous exaggeration but keep facial features identifiable."
+        )
+
+    parts = [
+        "You are editing a photo of a person to humorously make them look heavier "
+        "(this is a friendly joke between friends, not a real-world critique).",
+        f"Intensity (scale 1-10): {fatness}/10. {intensity}",
+        "Strict preservation rules:",
+        "- Keep the person's facial identity recognisable: same eye color, same hair "
+        "(color, length, and style), same skin tone, same age range.",
+        "- Keep their clothing the same items and colors, just adjusted to fit the "
+        "new body shape naturally (fabric stretches, slight bulges).",
+        "- Keep the original background, lighting, and overall framing exactly.",
+        "- Maintain a friendly, playful, non-shaming tone. The result should look "
+        "like a fun joke filter, not a cruel caricature.",
+    ]
+    if wishes.strip():
+        parts.append(f"Additional wishes from the user: {wishes.strip()}")
+    parts.append(
+        "Output a photo with the same aspect ratio as the input. "
+        "Do not add captions, text overlays, watermarks, or stickers."
+    )
+    return "\n\n".join(parts)
+
+
 def build_ugc_prompt(
     use_case: str,
     wishes: str,

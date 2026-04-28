@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Clock, Coins, LogOut, Plus, Zap } from 'lucide-react';
+import { Clock, Coins, LogOut, Plus, Sparkles, Zap } from 'lucide-react';
 import { logout, getUser } from '@/lib/auth';
 import { useCredits } from '@/lib/credits';
 
@@ -30,6 +30,13 @@ export default function Navbar({ showUserMenu = false }: NavbarProps) {
         {showUserMenu && user && (
           <div className="flex items-center gap-2 sm:gap-3">
             <CreditsBadge />
+            <Link
+              href="/mini-apps"
+              className="hidden sm:flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-50"
+            >
+              <Sparkles className="w-4 h-4" />
+              Mini Apps
+            </Link>
             <Link
               href="/history"
               className="hidden sm:flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-50"

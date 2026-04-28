@@ -23,7 +23,7 @@ export interface TopupResponse {
 
 export interface Generation {
   id: string;
-  type: 'marketplace' | 'ugc' | 'enhance';
+  type: 'marketplace' | 'ugc' | 'enhance' | 'mini_app';
   status: 'pending' | 'processing' | 'completed' | 'failed';
   input_data: Record<string, unknown>;
   source_image_url: string;

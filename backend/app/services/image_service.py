@@ -14,6 +14,7 @@ from app.models.generation import Generation, GenerationStatus
 from app.services import storage_service
 from app.services.prompts import (
     build_enhance_prompt,
+    build_fat_maker_prompt,
     build_marketplace_prompt,
     build_ugc_prompt,
 )
@@ -212,6 +213,57 @@ async def generate_enhance(
         except Exception as exc:
             logger.error(
                 "Enhance generation %s failed: %s",
+                generation_id,
+                exc,
+                exc_info=True,
+            )
+            await db.rollback()
+            if generation is not None:
+                generation.status = GenerationStatus.failed
+                generation.error_message = str(exc)[:1000]
+                await db.commit()
+
+
+async def generate_fat_maker(
+    generation_id: UUID,
+    user_id: UUID,
+    image_bytes: bytes,
+    wishes: str,
+    fatness: int,
+    count: int = 1,
+) -> None:
+    """Background task: generate fat-maker (joke weight-gain) variants."""
+    logger.info("Starting fat-maker generation %s", generation_id)
+
+    async with AsyncSessionLocal() as db:
+        generation: Generation | None = None
+        try:
+            result = await db.execute(
+                select(Generation).where(Generation.id == generation_id)
+            )
+            generation = result.scalar_one()
+            generation.status = GenerationStatus.processing
+            await db.commit()
+
+            prompt = build_fat_maker_prompt(wishes=wishes, fatness=fatness)
+
+            variants = await _generate_variants(image_bytes, prompt, count)
+            image_urls = await _upload_variants(variants, user_id, generation_id)
+
+            generation.status = GenerationStatus.completed
+            generation.image_urls = image_urls
+            generation.prompt_used = prompt
+            await db.commit()
+
+            logger.info(
+                "Fat-maker generation %s completed — %d images",
+                generation_id,
+                len(image_urls),
+            )
+
+        except Exception as exc:
+            logger.error(
+                "Fat-maker generation %s failed: %s",
                 generation_id,
                 exc,
                 exc_info=True,

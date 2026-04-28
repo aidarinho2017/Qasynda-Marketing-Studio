@@ -48,12 +48,26 @@ export default function GenerationCard({ generation, onDelete }: GenerationCardP
     }
   };
 
-  const typeLabel =
-    generation.type === 'marketplace'
-      ? 'Marketplace'
-      : generation.type === 'ugc'
-        ? 'UGC'
-        : 'Enhance';
+  const MINI_APP_LABELS: Record<string, string> = {
+    fat_maker: 'Fat Maker',
+  };
+
+  const typeLabel = (() => {
+    switch (generation.type) {
+      case 'marketplace':
+        return 'Marketplace';
+      case 'ugc':
+        return 'UGC';
+      case 'enhance':
+        return 'Enhance';
+      case 'mini_app': {
+        const appId = (generation.input_data as { app_id?: string } | null)?.app_id;
+        return appId ? MINI_APP_LABELS[appId] ?? 'Mini App' : 'Mini App';
+      }
+      default:
+        return '';
+    }
+  })();
   const date = new Date(generation.created_at).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
   });

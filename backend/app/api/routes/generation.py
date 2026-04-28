@@ -262,6 +262,87 @@ async def generate_enhance(
 
 
 # ---------------------------------------------------------------------------
+# POST /generate/fat-maker  (mini app)
+# ---------------------------------------------------------------------------
+
+
+@generate_router.post("/fat-maker", response_model=GenerationStartResponse, status_code=202)
+async def generate_fat_maker(
+    background_tasks: BackgroundTasks,
+    image: UploadFile = File(..., description="Photo of the person (JPEG/PNG/WebP, max 10 MB)"),
+    wishes: str = Form(default="", description="Optional creative wishes"),
+    fatness: int = Form(default=5, ge=1, le=10, description="Fatness intensity 1–10"),
+    count: int = Form(default=1, ge=1, le=4, description="Number of variants (1–4)"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> GenerationStartResponse:
+    """Start an async 'Fat Maker' mini-app generation."""
+    cost = credits_for_count(count)
+    if current_user.credits_balance < cost:
+        raise HTTPException(
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail=(
+                f"Insufficient credits: need {cost}, have {current_user.credits_balance}. "
+                "Top up to continue."
+            ),
+        )
+
+    image_bytes = await image.read()
+    _validate_and_read_image(image, image_bytes)
+
+    generation_id = uuid.uuid4()
+    ext = (image.content_type or "image/jpeg").split("/")[-1]
+    source_key = f"{current_user.id}/{generation_id}/source.{ext}"
+
+    source_url = await storage_service.upload_bytes(
+        settings.SUPABASE_BUCKET_UPLOADS,
+        source_key,
+        image_bytes,
+        image.content_type or "image/jpeg",
+    )
+
+    generation = Generation(
+        id=generation_id,
+        user_id=current_user.id,
+        type=GenerationType.mini_app,
+        status=GenerationStatus.pending,
+        input_data={
+            "app_id": "fat_maker",
+            "wishes": wishes.strip(),
+            "fatness": fatness,
+            "count": count,
+            "credits_charged": cost,
+        },
+        source_image_url=source_url,
+        image_urls=[],
+    )
+    current_user.credits_balance -= cost
+    db.add(generation)
+    await db.commit()
+
+    background_tasks.add_task(
+        image_service.generate_fat_maker,
+        generation_id=generation_id,
+        user_id=current_user.id,
+        image_bytes=image_bytes,
+        wishes=wishes.strip(),
+        fatness=fatness,
+        count=count,
+    )
+
+    logger.info(
+        "Queued fat-maker generation %s for user %s (fatness=%d)",
+        generation_id,
+        current_user.id,
+        fatness,
+    )
+    return GenerationStartResponse(
+        generation_id=generation_id,
+        status=GenerationStatus.pending,
+    )
+
+
+# ---------------------------------------------------------------------------
 # POST /generate/ugc
 # ---------------------------------------------------------------------------
 

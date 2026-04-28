@@ -12,6 +12,7 @@ class GenerationType(str, PyEnum):
     marketplace = "marketplace"
     ugc = "ugc"
     enhance = "enhance"
+    mini_app = "mini_app"
 
 
 class GenerationStatus(str, PyEnum):
