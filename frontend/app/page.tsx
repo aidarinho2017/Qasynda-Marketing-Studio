@@ -3,14 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import {
-  Check,
-  Footprints,
-  Headphones,
-  Sparkles,
-  Star,
-  Watch,
-} from 'lucide-react';
+import Image from 'next/image';
+import { Check } from 'lucide-react';
 import { api } from '@/lib/api';
 import { setToken, setUser, isAuthenticated } from '@/lib/auth';
 import { TOPUP_PACKS } from '@/lib/credits';
@@ -146,75 +140,25 @@ function Hero({ onPrimary, onSecondary }: { onPrimary: () => void; onSecondary: 
   );
 }
 
-// To replace these stylised mocks with real photos, drop your files into
-// frontend/public/examples/ and swap each card's `icon`/`bg` for an
-// <Image src="/examples/your-photo.png" fill ... /> in the image area.
-const HERO_CARDS = [
-  {
-    name: 'Кроссовки беговые',
-    price: '14 990',
-    icon: Footprints,
-    bg: 'bg-gradient-to-br from-rose-100 via-rose-50 to-white',
-    badge: 'NEW',
-  },
-  {
-    name: 'Наушники Pro',
-    price: '22 500',
-    icon: Headphones,
-    bg: 'bg-gradient-to-br from-violet-100 via-violet-50 to-white',
-    badge: '−25%',
-  },
-  {
-    name: 'Смарт-часы',
-    price: '35 000',
-    icon: Watch,
-    bg: 'bg-gradient-to-br from-emerald-100 via-emerald-50 to-white',
-    badge: 'ХИТ',
-  },
-  {
-    name: 'Парфюм 50ml',
-    price: '8 900',
-    icon: Sparkles,
-    bg: 'bg-gradient-to-br from-amber-100 via-amber-50 to-white',
-    badge: null,
-  },
-];
+const HERO_IMAGES = ['/hero1.png', '/hero2.png', '/hero3.png', '/hero4.png'];
 
 function ProductCardGrid() {
   return (
     <div className="grid grid-cols-2 gap-3">
-      {HERO_CARDS.map((c) => {
-        const Icon = c.icon;
-        return (
-          <div
-            key={c.name}
-            className="group rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
-          >
-            <div className={`relative aspect-square ${c.bg} flex items-center justify-center`}>
-              {c.badge && (
-                <span className="absolute top-2 left-2 px-1.5 py-0.5 bg-gray-900 text-white text-[10px] font-bold rounded tracking-wide">
-                  {c.badge}
-                </span>
-              )}
-              <Icon className="w-14 h-14 text-gray-700/85" strokeWidth={1.25} />
-            </div>
-            <div className="p-3 space-y-1">
-              <p className="text-[11px] font-medium text-gray-900 truncate leading-tight">
-                {c.name}
-              </p>
-              <div className="flex items-center justify-between gap-1">
-                <span className="text-xs font-bold text-gray-900 tabular-nums">
-                  ₸ {c.price}
-                </span>
-                <span className="flex items-center gap-0.5 text-[10px] text-gray-500">
-                  <Star className="w-2.5 h-2.5 fill-amber-400 stroke-amber-400" />
-                  4.9
-                </span>
-              </div>
-            </div>
-          </div>
-        );
-      })}
+      {HERO_IMAGES.map((src) => (
+        <div
+          key={src}
+          className="relative aspect-square rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm"
+        >
+          <Image
+            src={src}
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 280px, 50vw"
+            className="object-cover"
+          />
+        </div>
+      ))}
     </div>
   );
 }
@@ -307,102 +251,29 @@ function ExampleSection() {
         </div>
 
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <BeforePhoto />
-          <AfterCard />
+          <BeforeAfterImage label="Before" src="/before.jpg" />
+          <BeforeAfterImage label="After" src="/after.png" />
         </div>
       </div>
     </section>
   );
 }
 
-// Swap the inline mock for a real photo:
-//   <Image src="/examples/before.jpg" alt="…" fill className="object-cover" />
-function BeforePhoto() {
+function BeforeAfterImage({ label, src }: { label: string; src: string }) {
   return (
     <div className="rounded-lg border border-gray-200 overflow-hidden bg-white">
-      <div
-        className="relative aspect-[4/3] overflow-hidden"
-        style={{
-          background:
-            'radial-gradient(120% 90% at 30% 20%, #f5e9d4 0%, #d8c8b0 45%, #6f6258 100%)',
-        }}
-      >
-        {/* faux desk shadow */}
-        <div
-          className="absolute inset-x-6 bottom-2 h-6 rounded-full opacity-40 blur-md"
-          style={{ background: 'rgba(0,0,0,0.4)' }}
-        />
-        {/* tilted, off-center product */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Headphones
-            className="w-28 h-28 text-gray-700/80 -rotate-[10deg] translate-x-3 translate-y-1"
-            strokeWidth={1}
-          />
-        </div>
-        {/* warm vignette to fake bad lighting */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(140% 100% at 50% 50%, transparent 50%, rgba(40,28,15,0.35) 100%)',
-          }}
+      <div className="relative aspect-[4/3]">
+        <Image
+          src={src}
+          alt=""
+          fill
+          sizes="(min-width: 768px) 50vw, 100vw"
+          className="object-cover"
         />
       </div>
-      <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
-        <span className="text-xs font-medium text-gray-500 tracking-wider">BEFORE</span>
-        <span className="text-[11px] text-gray-400">Phone photo</span>
-      </div>
-    </div>
-  );
-}
-
-// Swap the inline mock for a real photo:
-//   <Image src="/examples/after.png" alt="…" fill className="object-cover" />
-function AfterCard() {
-  return (
-    <div className="rounded-lg border border-gray-200 overflow-hidden bg-white">
-      <div className="relative aspect-[4/3] flex flex-col">
-        {/* product image area */}
-        <div className="relative flex-1 bg-gradient-to-br from-violet-100 via-violet-50 to-white flex items-center justify-center">
-          <span
-            className="absolute top-3 left-3 px-2 py-0.5 text-[10px] font-bold rounded text-gray-900 tracking-wide"
-            style={{ backgroundColor: BRAND_GREEN }}
-          >
-            ХИТ ПРОДАЖ
-          </span>
-          <span className="absolute top-3 right-3 px-2 py-0.5 bg-gray-900 text-white text-[10px] font-bold rounded">
-            −25%
-          </span>
-          <Headphones className="w-32 h-32 text-gray-900" strokeWidth={1.25} />
-        </div>
-        {/* info bar */}
-        <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm rounded-md p-2.5 border border-gray-200 shadow-sm">
-          <p className="text-xs font-bold text-gray-900 truncate">
-            Беспроводные наушники Pro
-          </p>
-          <p className="text-[10px] text-gray-500 mt-0.5 truncate">
-            Шумоподавление · 30ч работы · Bluetooth 5.3
-          </p>
-          <div className="flex items-center justify-between mt-1.5">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-sm font-bold text-gray-900 tabular-nums">
-                ₸ 22 500
-              </span>
-              <span className="text-[10px] text-gray-400 line-through tabular-nums">
-                ₸ 30 000
-              </span>
-            </div>
-            <span className="flex items-center gap-0.5 text-[10px] text-gray-700">
-              <Star className="w-2.5 h-2.5 fill-amber-400 stroke-amber-400" />
-              4.9 · 1.2k
-            </span>
-          </div>
-        </div>
-      </div>
-      <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
-        <span className="text-xs font-medium text-gray-500 tracking-wider">AFTER</span>
-        <span className="text-[11px] font-semibold text-gray-700">
-          Generated by Qasynda
+      <div className="px-4 py-3 border-t border-gray-100">
+        <span className="text-xs font-medium text-gray-500 tracking-wider">
+          {label.toUpperCase()}
         </span>
       </div>
     </div>
