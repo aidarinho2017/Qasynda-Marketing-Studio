@@ -1,48 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Check, Coins, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Coins } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { isAuthenticated } from '@/lib/auth';
-import {
-  CREDITS_PER_IMAGE,
-  TOPUP_PACKS,
-  topupCredits,
-  useCredits,
-} from '@/lib/credits';
+import { CREDITS_PER_IMAGE, TOPUP_PACKS, useCredits } from '@/lib/credits';
 
 export default function TopupPage() {
   const router = useRouter();
   const { balance } = useCredits();
-  const [busyPackId, setBusyPackId] = useState<string | null>(null);
-  const [success, setSuccess] = useState<{
-    packId: string;
-    creditsAdded: number;
-    newBalance: number;
-  } | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated()) router.replace('/');
   }, [router]);
-
-  const handleBuy = async (packId: string) => {
-    setBusyPackId(packId);
-    setError(null);
-    try {
-      const res = await topupCredits(packId);
-      setSuccess({
-        packId,
-        creditsAdded: res.credits_added,
-        newBalance: res.credits_balance,
-      });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Top-up failed');
-    } finally {
-      setBusyPackId(null);
-    }
-  };
 
   const cheapestPricePerCredit = Math.min(
     ...TOPUP_PACKS.map((p) => p.price_usd / p.credits),
@@ -65,7 +36,7 @@ export default function TopupPage() {
           <Coins className="w-5 h-5 text-indigo-600" />
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Top up credits</h1>
         </div>
-        <p className="text-sm text-gray-500 mb-2">
+        <p className="text-sm text-gray-500 mb-8">
           {balance === null ? (
             'Loading current balance…'
           ) : (
@@ -78,36 +49,11 @@ export default function TopupPage() {
           Each generation costs from <span className="font-medium">{CREDITS_PER_IMAGE}</span>{' '}
           credits.
         </p>
-        <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 inline-block mb-8">
-          Demo mode — no real payment will be charged.
-        </p>
-
-        {success && (
-          <div className="mb-8 flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-2xl text-green-800">
-            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center shrink-0">
-              <Check className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="font-semibold">+{success.creditsAdded} credits added</p>
-              <p className="text-sm text-green-700">
-                New balance:{' '}
-                <span className="font-semibold tabular-nums">{success.newBalance}</span>
-              </p>
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <p className="mb-6 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-            {error}
-          </p>
-        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {TOPUP_PACKS.map((pack) => {
             const pricePerCredit = pack.price_usd / pack.credits;
             const isBest = pricePerCredit === cheapestPricePerCredit;
-            const isBusy = busyPackId === pack.id;
             return (
               <div
                 key={pack.id}
@@ -134,18 +80,16 @@ export default function TopupPage() {
 
                 <div className="mt-auto">
                   <button
-                    onClick={() => handleBuy(pack.id)}
-                    disabled={busyPackId !== null}
+                    onClick={() => router.push(`/topup/checkout?pack=${pack.id}`)}
                     className={[
                       'w-full py-2.5 px-4 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2',
                       isBest
                         ? 'bg-indigo-600 text-white hover:bg-indigo-700'
                         : 'bg-gray-900 text-white hover:bg-gray-800',
-                      'disabled:opacity-50 disabled:cursor-not-allowed',
                     ].join(' ')}
                   >
-                    {isBusy && <Loader2 className="w-4 h-4 animate-spin" />}
-                    {isBusy ? 'Adding…' : `Buy for $${pack.price_usd.toFixed(2)}`}
+                    Buy for ${pack.price_usd.toFixed(2)}
+                    <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
