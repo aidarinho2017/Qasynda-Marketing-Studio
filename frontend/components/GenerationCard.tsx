@@ -48,7 +48,12 @@ export default function GenerationCard({ generation, onDelete }: GenerationCardP
     }
   };
 
-  const typeLabel = generation.type === 'marketplace' ? 'Marketplace' : 'UGC';
+  const typeLabel =
+    generation.type === 'marketplace'
+      ? 'Marketplace'
+      : generation.type === 'ugc'
+        ? 'UGC'
+        : 'Enhance';
   const date = new Date(generation.created_at).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
   });

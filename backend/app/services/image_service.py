@@ -12,7 +12,11 @@ from app.core.config import settings
 from app.db.session import AsyncSessionLocal
 from app.models.generation import Generation, GenerationStatus
 from app.services import storage_service
-from app.services.prompts import build_marketplace_prompt, build_ugc_prompt
+from app.services.prompts import (
+    build_enhance_prompt,
+    build_marketplace_prompt,
+    build_ugc_prompt,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -158,6 +162,56 @@ async def generate_marketplace(
         except Exception as exc:
             logger.error(
                 "Marketplace generation %s failed: %s",
+                generation_id,
+                exc,
+                exc_info=True,
+            )
+            await db.rollback()
+            if generation is not None:
+                generation.status = GenerationStatus.failed
+                generation.error_message = str(exc)[:1000]
+                await db.commit()
+
+
+async def generate_enhance(
+    generation_id: UUID,
+    user_id: UUID,
+    image_bytes: bytes,
+    wishes: str,
+    count: int = 4,
+) -> None:
+    """Background task: generate enhanced (cleaned-up) product photo variants."""
+    logger.info("Starting enhance generation %s", generation_id)
+
+    async with AsyncSessionLocal() as db:
+        generation: Generation | None = None
+        try:
+            result = await db.execute(
+                select(Generation).where(Generation.id == generation_id)
+            )
+            generation = result.scalar_one()
+            generation.status = GenerationStatus.processing
+            await db.commit()
+
+            prompt = build_enhance_prompt(wishes=wishes)
+
+            variants = await _generate_variants(image_bytes, prompt, count)
+            image_urls = await _upload_variants(variants, user_id, generation_id)
+
+            generation.status = GenerationStatus.completed
+            generation.image_urls = image_urls
+            generation.prompt_used = prompt
+            await db.commit()
+
+            logger.info(
+                "Enhance generation %s completed — %d images",
+                generation_id,
+                len(image_urls),
+            )
+
+        except Exception as exc:
+            logger.error(
+                "Enhance generation %s failed: %s",
                 generation_id,
                 exc,
                 exc_info=True,

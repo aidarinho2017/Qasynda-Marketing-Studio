@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, Film, LayoutGrid } from 'lucide-react';
+import { ArrowRight, Film, LayoutGrid, Wand2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { isAuthenticated } from '@/lib/auth';
 
@@ -30,7 +30,7 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <ChoiceCard
             href="/generate?mode=marketplace"
             icon={<LayoutGrid className="w-6 h-6 text-indigo-600" />}
@@ -42,6 +42,12 @@ export default function DashboardPage() {
             icon={<Film className="w-6 h-6 text-indigo-600" />}
             title="UGC Images"
             description="Realistic, social-style imagery showing your product being used."
+          />
+          <ChoiceCard
+            href="/generate?mode=enhance"
+            icon={<Wand2 className="w-6 h-6 text-indigo-600" />}
+            title="Enhance Photo"
+            description="Clean up your product photo: remove background, fix lighting, sharpen detail."
           />
         </div>
       </main>

@@ -2,7 +2,14 @@
 
 import { Suspense, useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, LayoutGrid, Film, ChevronDown, Settings2 } from 'lucide-react';
+import {
+  ChevronDown,
+  Film,
+  LayoutGrid,
+  Loader2,
+  Settings2,
+  Wand2,
+} from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import UploadForm from '@/components/UploadForm';
 import GenerationsGallery, {
@@ -475,14 +482,82 @@ function UGCForm({
   );
 }
 
+// ─── Enhance form ────────────────────────────────────────────────────────────
+
+function EnhanceForm({
+  file,
+  onFile,
+  onSubmit,
+  submitting,
+  error,
+}: {
+  file: File | null;
+  onFile: (f: File) => void;
+  onSubmit: (form: FormData) => Promise<void>;
+  submitting: boolean;
+  error: string | null;
+}) {
+  const [wishes, setWishes] = useState('');
+  const [count, setCount] = useState(4);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!file) {
+      alert('Please upload a product image.');
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('image', file);
+    fd.append('wishes', wishes.trim());
+    fd.append('count', String(count));
+
+    await onSubmit(fd);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <UploadForm onFile={onFile} currentFile={file} />
+
+      <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 text-sm text-indigo-900 leading-relaxed">
+        Мы автоматически:
+        <ul className="mt-1.5 ml-1 space-y-0.5 text-indigo-800">
+          <li>· уберём фон</li>
+          <li>· улучшим свет</li>
+          <li>· повысим резкость</li>
+        </ul>
+      </div>
+
+      <FormGroup label="Tell us how to improve (optional)">
+        <Textarea
+          rows={3}
+          placeholder="E.g. 'make the colors warmer', 'keep the natural shadow', 'whiter background'. Leave blank to let the AI decide."
+          value={wishes}
+          onChange={(e) => setWishes(e.target.value)}
+        />
+      </FormGroup>
+
+      <CountPicker value={count} onChange={setCount} />
+
+      {error && (
+        <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+          {error}
+        </p>
+      )}
+
+      <SubmitButton count={count} submitting={submitting} fileMissing={!file} />
+    </form>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 function GenerateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialMode = (searchParams.get('mode') as 'marketplace' | 'ugc') ?? 'marketplace';
+  const initialMode = (searchParams.get('mode') as 'marketplace' | 'ugc' | 'enhance') ?? 'marketplace';
 
-  const [mode, setMode] = useState<'marketplace' | 'ugc'>(initialMode);
+  const [mode, setMode] = useState<'marketplace' | 'ugc' | 'enhance'>(initialMode);
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -492,7 +567,7 @@ function GenerateContent() {
     if (!isAuthenticated()) router.replace('/');
   }, [router]);
 
-  const switchMode = (m: 'marketplace' | 'ugc') => {
+  const switchMode = (m: 'marketplace' | 'ugc' | 'enhance') => {
     setMode(m);
     setFile(null);
     setError(null);
@@ -502,7 +577,12 @@ function GenerateContent() {
     setSubmitting(true);
     setError(null);
     try {
-      const endpoint = mode === 'marketplace' ? '/generate/marketplace' : '/generate/ugc';
+      const endpoint =
+        mode === 'marketplace'
+          ? '/generate/marketplace'
+          : mode === 'ugc'
+            ? '/generate/ugc'
+            : '/generate/enhance';
       await api.post<GenerationStartResponse>(endpoint, fd);
       setFile(null);
       await Promise.all([galleryRef.current?.refetch(), refreshCredits()]);
@@ -557,11 +637,24 @@ function GenerateContent() {
                 <Film className="w-4 h-4" />
                 UGC
               </button>
+              <button
+                type="button"
+                onClick={() => switchMode('enhance')}
+                className={[
+                  'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                  mode === 'enhance'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700',
+                ].join(' ')}
+              >
+                <Wand2 className="w-4 h-4" />
+                Enhance
+              </button>
             </div>
 
             {/* Form card */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-              {mode === 'marketplace' ? (
+              {mode === 'marketplace' && (
                 <MarketplaceForm
                   file={file}
                   onFile={setFile}
@@ -569,8 +662,18 @@ function GenerateContent() {
                   submitting={submitting}
                   error={error}
                 />
-              ) : (
+              )}
+              {mode === 'ugc' && (
                 <UGCForm
+                  file={file}
+                  onFile={setFile}
+                  onSubmit={handleSubmit}
+                  submitting={submitting}
+                  error={error}
+                />
+              )}
+              {mode === 'enhance' && (
+                <EnhanceForm
                   file={file}
                   onFile={setFile}
                   onSubmit={handleSubmit}

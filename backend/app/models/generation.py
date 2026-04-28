@@ -11,6 +11,7 @@ from app.db.base import Base, TimestampMixin
 class GenerationType(str, PyEnum):
     marketplace = "marketplace"
     ugc = "ugc"
+    enhance = "enhance"
 
 
 class GenerationStatus(str, PyEnum):

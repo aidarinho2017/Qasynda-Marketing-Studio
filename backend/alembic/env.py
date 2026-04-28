@@ -1,4 +1,5 @@
 import asyncio
+import uuid
 from logging.config import fileConfig
 
 from sqlalchemy import pool
@@ -53,10 +54,14 @@ async def run_migrations_online() -> None:
 
     connect_args: dict = {}
     if not settings.DIRECT_DATABASE_URL:
-        # pgBouncer transaction mode does not support prepared statements
+        # pgBouncer transaction mode does not support cached prepared statements
+        # AND can leak per-connection state across logical connections, so we
+        # also randomise prepared-statement names to avoid name collisions on
+        # the pooled backend.
         connect_args = {
             "statement_cache_size": 0,
             "prepared_statement_cache_size": 0,
+            "prepared_statement_name_func": lambda: f"__asyncpg_{uuid.uuid4().hex}__",
         }
 
     connectable = async_engine_from_config(

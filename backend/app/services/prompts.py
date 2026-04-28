@@ -121,6 +121,41 @@ def build_marketplace_prompt(
     return "\n\n".join(parts)
 
 
+def build_enhance_prompt(wishes: str) -> str:
+    """Build a product-photo enhancement prompt.
+
+    The user's source product photo is provided as the first inline image.
+    The model must clean it up — remove the background, fix lighting,
+    sharpen detail — without altering the product itself.
+
+    Args:
+        wishes: Optional free-text user note ("make the colour pop", "warmer
+            tone", etc.). May be empty.
+    """
+    parts = [
+        "You are enhancing the seller's product photo to a clean, marketplace-ready quality.",
+        "Required improvements:",
+        "- Remove the existing background and replace it with a clean, soft white "
+        "studio backdrop, with a subtle natural grounding shadow under the product.",
+        "- Correct the lighting: even, neutral, soft studio illumination that flatters "
+        "the product. Eliminate harsh shadows, color casts, and uneven exposure.",
+        "- Increase sharpness and clarity: crisp edges, accurate textures, no motion "
+        "blur, no compression artefacts.",
+        "- Keep the product perfectly centered and at a flattering scale within the frame.",
+        "Critical constraint: the product itself — its exact shape, proportions, "
+        "colors, materials, logos, labels and identifying details — must be preserved "
+        "exactly as in the source. Do not redesign, recolor, or restyle the product. "
+        "This is a photo cleanup, not a redesign.",
+    ]
+    if wishes.strip():
+        parts.append(f"Additional wishes from the seller: {wishes.strip()}")
+    parts.append(
+        "Output a square (1:1) image. Do not add watermarks, text overlays, "
+        "stickers, badges, or marketplace branding."
+    )
+    return "\n\n".join(parts)
+
+
 def build_ugc_prompt(
     use_case: str,
     wishes: str,
