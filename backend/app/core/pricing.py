@@ -28,9 +28,9 @@ class TopupPack:
 
 
 TOPUP_PACKS: list[TopupPack] = [
-    TopupPack(id="small", credits=50, price_usd=3.00),
-    TopupPack(id="medium", credits=100, price_usd=5.00),
-    TopupPack(id="large", credits=200, price_usd=9.00),
+    TopupPack(id="basic", credits=50, price_usd=3.00),
+    TopupPack(id="pro", credits=100, price_usd=5.00),
+    TopupPack(id="ultra", credits=500, price_usd=22.00),
 ]
 
 

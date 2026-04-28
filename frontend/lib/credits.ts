@@ -14,9 +14,9 @@ export const CREDITS_BY_COUNT: Record<number, number> = {
 };
 
 export const TOPUP_PACKS: TopupPack[] = [
-  { id: 'small', credits: 50, price_usd: 3 },
-  { id: 'medium', credits: 100, price_usd: 5 },
-  { id: 'large', credits: 200, price_usd: 9 },
+  { id: 'basic', credits: 50, price_usd: 3, name: 'Basic' },
+  { id: 'pro', credits: 100, price_usd: 5, name: 'Pro' },
+  { id: 'ultra', credits: 500, price_usd: 22, name: 'Ultra' },
 ];
 
 export function fullPriceForCount(count: number): number {

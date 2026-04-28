@@ -11,6 +11,7 @@ export interface TopupPack {
   id: string;
   credits: number;
   price_usd: number;
+  name?: string;
 }
 
 export interface TopupResponse {

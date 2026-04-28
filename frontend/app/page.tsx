@@ -3,9 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { Check } from 'lucide-react';
 import { api } from '@/lib/api';
 import { setToken, setUser, isAuthenticated } from '@/lib/auth';
+import { TOPUP_PACKS } from '@/lib/credits';
 import type { TokenResponse } from '@/lib/types';
+
+const BRAND_GREEN = '#89F336';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? '';
 
@@ -51,6 +55,7 @@ export default function LandingPage() {
         <ExampleSection />
         <Features />
         <WhoItsFor />
+        <Pricing onClick={openAuth} />
         <Trust />
         <FinalCTA onClick={openAuth} />
       </main>
@@ -86,7 +91,8 @@ function Navbar({ onAuth }: { onAuth: () => void }) {
           </button>
           <button
             onClick={onAuth}
-            className="text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-md px-4 py-2 transition-colors"
+            style={{ backgroundColor: BRAND_GREEN }}
+            className="text-sm font-semibold text-gray-900 hover:brightness-95 rounded-md px-4 py-2 transition-all"
           >
             Get Started
           </button>
@@ -113,7 +119,8 @@ function Hero({ onPrimary, onSecondary }: { onPrimary: () => void; onSecondary: 
           <div className="mt-9 flex items-center gap-6">
             <button
               onClick={onPrimary}
-              className="text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-md px-5 py-2.5 transition-colors"
+              style={{ backgroundColor: BRAND_GREEN }}
+              className="text-sm font-semibold text-gray-900 hover:brightness-95 rounded-md px-5 py-2.5 transition-all shadow-sm"
             >
               Get Started
             </button>
@@ -322,6 +329,124 @@ function WhoItsFor() {
   );
 }
 
+// ─── Pricing ─────────────────────────────────────────────────────────────────
+
+const PACK_COPY: Record<string, { tagline: string; bullets: string[] }> = {
+  basic: {
+    tagline: 'Perfect for testing the waters.',
+    bullets: ['Up to 10 generations', 'All marketplace styles', 'UGC mode included'],
+  },
+  pro: {
+    tagline: 'For active sellers shipping new listings every week.',
+    bullets: ['Up to 20 generations', 'Priority queue', 'All marketplace + UGC styles'],
+  },
+  ultra: {
+    tagline: 'Best value for stores running ads and large catalogs.',
+    bullets: [
+      'Up to 100 generations',
+      'Priority queue',
+      'Lowest price per credit',
+      'All marketplace + UGC styles',
+    ],
+  },
+};
+
+function Pricing({ onClick }: { onClick: () => void }) {
+  const cheapest = Math.min(...TOPUP_PACKS.map((p) => p.price_usd / p.credits));
+
+  return (
+    <section className="border-b border-gray-100">
+      <div className="max-w-6xl mx-auto px-6 py-20">
+        <div className="max-w-2xl">
+          <h2 className="text-3xl font-semibold tracking-tight text-gray-900">
+            Simple, pay-as-you-go pricing
+          </h2>
+          <p className="mt-4 text-base text-gray-600 leading-relaxed">
+            Buy credits when you need them — they never expire. Each generation
+            costs from <span className="font-semibold text-gray-900">5 credits</span>.
+          </p>
+        </div>
+
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-5">
+          {TOPUP_PACKS.map((pack) => {
+            const pricePerCredit = pack.price_usd / pack.credits;
+            const isBest = pricePerCredit === cheapest;
+            const copy = PACK_COPY[pack.id] ?? { tagline: '', bullets: [] };
+
+            return (
+              <div
+                key={pack.id}
+                className={[
+                  'relative flex flex-col bg-white rounded-2xl border p-7',
+                  isBest ? 'border-gray-900 shadow-lg' : 'border-gray-200',
+                ].join(' ')}
+                style={isBest ? { boxShadow: `0 0 0 1px ${BRAND_GREEN}40, 0 10px 30px -10px rgba(0,0,0,0.15)` } : undefined}
+              >
+                {isBest && (
+                  <span
+                    className="absolute -top-3 left-7 px-2.5 py-1 text-[11px] font-bold text-gray-900 rounded-full"
+                    style={{ backgroundColor: BRAND_GREEN }}
+                  >
+                    BEST VALUE
+                  </span>
+                )}
+
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+                  {pack.name ?? pack.id}
+                </h3>
+
+                <div className="mt-3 flex items-baseline gap-1.5">
+                  <span className="text-4xl font-bold tracking-tight text-gray-900 tabular-nums">
+                    ${pack.price_usd.toFixed(0)}
+                  </span>
+                  <span className="text-sm text-gray-500">one-time</span>
+                </div>
+
+                <p className="mt-2 text-sm text-gray-700 font-medium">
+                  {pack.credits} credits
+                  <span className="text-gray-400 font-normal">
+                    {' '}· ${pricePerCredit.toFixed(3)}/credit
+                  </span>
+                </p>
+
+                <p className="mt-3 text-sm text-gray-600 leading-relaxed">
+                  {copy.tagline}
+                </p>
+
+                <ul className="mt-5 space-y-2.5 text-sm text-gray-700 flex-1">
+                  {copy.bullets.map((b) => (
+                    <li key={b} className="flex items-start gap-2">
+                      <Check className="w-4 h-4 mt-0.5 text-gray-900 shrink-0" />
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  onClick={onClick}
+                  style={isBest ? { backgroundColor: BRAND_GREEN } : undefined}
+                  className={[
+                    'mt-7 w-full py-2.5 px-4 rounded-md text-sm font-semibold transition-all',
+                    isBest
+                      ? 'text-gray-900 hover:brightness-95 shadow-sm'
+                      : 'text-white bg-gray-900 hover:bg-gray-800',
+                  ].join(' ')}
+                >
+                  Get {pack.name ?? pack.id}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="mt-6 text-xs text-gray-400 text-center">
+          New accounts get 5 free credits — try it before you buy anything.
+        </p>
+      </div>
+    </section>
+  );
+}
+
 // ─── Trust ───────────────────────────────────────────────────────────────────
 
 function Trust() {
@@ -350,7 +475,8 @@ function FinalCTA({ onClick }: { onClick: () => void }) {
         </h2>
         <button
           onClick={onClick}
-          className="mt-8 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 rounded-md px-6 py-3 transition-colors"
+          style={{ backgroundColor: BRAND_GREEN }}
+          className="mt-8 text-sm font-semibold text-gray-900 hover:brightness-95 rounded-md px-6 py-3 transition-all shadow-sm"
         >
           Generate images now
         </button>
