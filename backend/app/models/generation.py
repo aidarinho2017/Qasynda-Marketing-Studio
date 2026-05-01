@@ -13,6 +13,7 @@ class GenerationType(str, PyEnum):
     ugc = "ugc"
     enhance = "enhance"
     mini_app = "mini_app"
+    listing_pack = "listing_pack"
 
 
 class GenerationStatus(str, PyEnum):
@@ -44,6 +45,7 @@ class Generation(TimestampMixin, Base):
     image_urls: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
     prompt_used: Mapped[str | None] = mapped_column(Text, nullable=True)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    content_plan: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
 
     __table_args__ = (
         Index("ix_generations_user_id", "user_id"),

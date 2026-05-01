@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, Film, LayoutGrid, Wand2 } from 'lucide-react';
+import { ArrowRight, Compass, Film, LayoutGrid, Package, Wand2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { isAuthenticated } from '@/lib/auth';
 
@@ -30,7 +30,7 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <ChoiceCard
             href="/generate?mode=marketplace"
             icon={<LayoutGrid className="w-6 h-6 text-indigo-600" />}
@@ -48,6 +48,18 @@ export default function DashboardPage() {
             icon={<Wand2 className="w-6 h-6 text-indigo-600" />}
             title="Enhance Photo"
             description="Clean up your product photo: remove background, fix lighting, sharpen detail."
+          />
+          <ChoiceCard
+            href="/generate/listing-pack"
+            icon={<Package className="w-6 h-6 text-indigo-600" />}
+            title="Product Listing Pack"
+            description="Generate a full set of 5–7 marketplace-ready slides — hero, benefits, use case, details, final."
+          />
+          <ChoiceCard
+            href="/growth-manager"
+            icon={<Compass className="w-6 h-6 text-indigo-600" />}
+            title="AI Growth Manager"
+            description="Your guided coach — from product idea to ICP, offer, ad hooks, and visuals. Step by step."
           />
         </div>
       </main>

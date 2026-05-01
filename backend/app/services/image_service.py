@@ -13,6 +13,7 @@ from app.db.session import AsyncSessionLocal
 from app.models.generation import Generation, GenerationStatus
 from app.services import storage_service
 from app.services.prompts import (
+    build_chess_prompt,
     build_enhance_prompt,
     build_fat_maker_prompt,
     build_marketplace_prompt,
@@ -264,6 +265,52 @@ async def generate_fat_maker(
         except Exception as exc:
             logger.error(
                 "Fat-maker generation %s failed: %s",
+                generation_id,
+                exc,
+                exc_info=True,
+            )
+            await db.rollback()
+            if generation is not None:
+                generation.status = GenerationStatus.failed
+                generation.error_message = str(exc)[:1000]
+                await db.commit()
+
+
+async def generate_chess(
+    generation_id: UUID,
+    user_id: UUID,
+    image_bytes: bytes,
+    piece: str,
+    wishes: str,
+) -> None:
+    """Background task: transform a person into a chess piece figure."""
+    logger.info("Starting chess generation %s", generation_id)
+
+    async with AsyncSessionLocal() as db:
+        generation: Generation | None = None
+        try:
+            result = await db.execute(
+                select(Generation).where(Generation.id == generation_id)
+            )
+            generation = result.scalar_one()
+            generation.status = GenerationStatus.processing
+            await db.commit()
+
+            prompt = build_chess_prompt(piece=piece, wishes=wishes)
+
+            variants = await _generate_variants(image_bytes, prompt, 1)
+            image_urls = await _upload_variants(variants, user_id, generation_id)
+
+            generation.status = GenerationStatus.completed
+            generation.image_urls = image_urls
+            generation.prompt_used = prompt
+            await db.commit()
+
+            logger.info("Chess generation %s completed", generation_id)
+
+        except Exception as exc:
+            logger.error(
+                "Chess generation %s failed: %s",
                 generation_id,
                 exc,
                 exc_info=True,

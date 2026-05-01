@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Trash2, Loader2, AlertCircle, ImageOff, Download } from 'lucide-react';
 import type { Generation } from '@/lib/types';
+import { imageUrlOf } from '@/lib/types';
 
 interface GenerationCardProps {
   generation: Generation;
@@ -50,6 +51,7 @@ export default function GenerationCard({ generation, onDelete }: GenerationCardP
 
   const MINI_APP_LABELS: Record<string, string> = {
     fat_maker: 'Fat Maker',
+    chess: 'Chess',
   };
 
   const typeLabel = (() => {
@@ -60,6 +62,8 @@ export default function GenerationCard({ generation, onDelete }: GenerationCardP
         return 'UGC';
       case 'enhance':
         return 'Enhance';
+      case 'listing_pack':
+        return 'Listing Pack';
       case 'mini_app': {
         const appId = (generation.input_data as { app_id?: string } | null)?.app_id;
         return appId ? MINI_APP_LABELS[appId] ?? 'Mini App' : 'Mini App';
@@ -78,11 +82,11 @@ export default function GenerationCard({ generation, onDelete }: GenerationCardP
       <div className="relative bg-gray-50">
         {generation.status === 'completed' && generation.image_urls.length > 0 ? (
           <div className={`grid gap-0.5 ${generation.image_urls.length >= 4 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-            {generation.image_urls.slice(0, 4).map((url, i) => (
+            {generation.image_urls.slice(0, 4).map((entry, i) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 key={i}
-                src={url}
+                src={imageUrlOf(entry)}
                 alt={`Generated image ${i + 1}`}
                 className="aspect-square w-full object-cover"
               />
@@ -126,7 +130,7 @@ export default function GenerationCard({ generation, onDelete }: GenerationCardP
         <div className="flex items-center gap-2 mt-auto pt-2 border-t border-gray-50">
           {generation.status === 'completed' && generation.image_urls.length > 0 && (
             <a
-              href={generation.image_urls[0]}
+              href={imageUrlOf(generation.image_urls[0])}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-medium"

@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, Sparkles, Smile } from 'lucide-react';
+import { ArrowRight, Sparkles, Smile, Crown } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { isAuthenticated } from '@/lib/auth';
 
@@ -38,6 +38,12 @@ export default function MiniAppsPage() {
             icon={<Smile className="w-6 h-6 text-indigo-600" />}
             title="Fat Maker"
             description="Upload a photo of your friend and watch them get gradually rounder. Just for laughs."
+          />
+          <MiniAppCard
+            href="/mini-apps/chess"
+            icon={<Crown className="w-6 h-6 text-indigo-600" />}
+            title="Chess"
+            description="Turn your friend into a chess piece. Pawn them, knight them, or make them king."
           />
         </div>
       </main>

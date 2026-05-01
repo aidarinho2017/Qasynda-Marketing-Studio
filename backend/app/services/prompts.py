@@ -208,6 +208,199 @@ def build_fat_maker_prompt(wishes: str, fatness: int) -> str:
     return "\n\n".join(parts)
 
 
+_CHESS_PIECES: dict[str, str] = {
+    "pawn": (
+        "a Pawn — the smallest, humblest piece: a short, round-headed cylindrical figure "
+        "with a ball on top and a simple flared base, like a tiny soldier."
+    ),
+    "rook": (
+        "a Rook — a sturdy castle-tower piece: a wide cylindrical body with battlements "
+        "(crenellations) on top, solid and fortress-like."
+    ),
+    "knight": (
+        "a Knight — a horse-head piece: an elongated horse head and neck mounted on a "
+        "stepped base, dynamic and proud."
+    ),
+    "bishop": (
+        "a Bishop — a tall, slender piece with a distinctive pointed top (mitre), slightly "
+        "taller than a rook, elegant and narrow."
+    ),
+    "queen": (
+        "a Queen — the most powerful piece: tall and elegant with a spiked crown on top, "
+        "slender body, commanding presence."
+    ),
+    "king": (
+        "a King — the tallest piece: a cross on top of a crown, wide and regal, "
+        "imposing and dignified."
+    ),
+}
+
+
+def build_chess_prompt(piece: str, wishes: str) -> str:
+    """Build a chess mini-app prompt — transform a person into a chess figure.
+
+    The person's photo is provided as the first inline image.
+
+    Args:
+        piece: One of pawn, rook, knight, bishop, queen, king.
+        wishes: Optional free-text creative wishes from the user.
+    """
+    piece = piece.lower().strip()
+    piece_desc = _CHESS_PIECES.get(piece, _CHESS_PIECES["pawn"])
+
+    parts = [
+        "You are transforming a photo of a person into a 3D-rendered chess piece figure. "
+        "The output should look like a high-quality wooden or marble chess piece, but with "
+        "the person's facial features subtly incorporated into the piece's design — "
+        "for example, a carved face on the piece's 'head' area that resembles the person.",
+        f"The chess piece to create is {piece_desc}",
+        "Style requirements:",
+        "- Render it as a classic hand-carved wooden chess piece (dark walnut or light maple) "
+        "or polished marble chess piece — photorealistic material texture.",
+        "- The piece sits on a chessboard square or a plain dark background with soft studio lighting.",
+        "- The person's likeness (face, distinctive features) should be subtly carved or sculpted "
+        "into the piece — not a floating head, but organically integrated into the piece's form.",
+        "- Keep the piece recognisably that chess type — don't change the silhouette.",
+        "- The result should be funny and charming, like a personalised chess set gift.",
+    ]
+    if wishes.strip():
+        parts.append(f"Additional wishes from the user: {wishes.strip()}")
+    parts.append(
+        "Output a square image. Do not add captions, text overlays, watermarks, or stickers."
+    )
+    return "\n\n".join(parts)
+
+
+_MARKETPLACE_STYLE: dict[str, str] = {
+    "kaspi": (
+        "Kaspi marketplace style: minimal, clean, almost editorial. Plain white or "
+        "very light neutral background, soft single-source lighting, restrained color "
+        "palette, generous whitespace. Text overlays — when present — are short, "
+        "left-aligned, in a clean modern sans-serif (think Inter / SF Pro), high contrast, "
+        "no decorative shapes or stickers. The product is the hero; styling never "
+        "competes with it."
+    ),
+    "wildberries": (
+        "Wildberries marketplace style: punchy infographic look. Bold saturated "
+        "background blocks, large readable headline text in a strong sans-serif, "
+        "icon callouts and short benefit captions arranged around the product, "
+        "high-energy color accents (often a single brand color + white). The "
+        "composition reads at a thumbnail size and conveys the main benefit instantly."
+    ),
+}
+
+
+def _marketplace_style(marketplace: str) -> str:
+    return _MARKETPLACE_STYLE.get(
+        marketplace.lower().strip(), _MARKETPLACE_STYLE["kaspi"]
+    )
+
+
+def _common_listing_rules() -> str:
+    return (
+        "Strict rules:\n"
+        "- The product itself is provided as the first inline image. Preserve its exact "
+        "shape, colors, materials, and identifying details. Do not redesign it.\n"
+        "- This image has ONE purpose. Do not mix multiple ideas into a single frame.\n"
+        "- Any text overlay must be short (max ~6 words), highly legible, and positioned "
+        "with clear contrast against the background.\n"
+        "- Do not add platform logos, watermarks, prices, or marketplace branding.\n"
+        "- Output a square (1:1) image suitable for a marketplace listing."
+    )
+
+
+def build_hero_prompt(plan: dict, marketplace: str) -> str:
+    """Hero (main) listing image — the cover slide of the pack."""
+    title = plan.get("title", "the product")
+    return "\n\n".join([
+        f"You are generating the HERO (main cover) listing image for: {title}.",
+        f"Marketplace style: {_marketplace_style(marketplace)}",
+        "Composition: product centered, full and clearly visible, "
+        "professional studio framing. Background is clean and minimal so the product "
+        "pops at thumbnail size.",
+        "Text overlay: a single short headline with the product title — "
+        f"\"{title}\" — bold, readable, top-left or top-center placement. "
+        "No subtitle, no extra text.",
+        _common_listing_rules(),
+    ])
+
+
+def build_benefits_prompt(plan: dict, index: int, marketplace: str) -> str:
+    """Benefit slide #index (0-based) — one benefit, one visual."""
+    benefits: list[str] = plan.get("benefits", []) or []
+    if not benefits:
+        benefit = "Key benefit"
+    else:
+        benefit = benefits[index % len(benefits)]
+    title = plan.get("title", "the product")
+    return "\n\n".join([
+        f"You are generating BENEFIT slide #{index + 1} for: {title}.",
+        f"This slide must communicate exactly ONE benefit: \"{benefit}\".",
+        f"Marketplace style: {_marketplace_style(marketplace)}",
+        "Composition: product on one side, benefit text on the other, "
+        "with a single supporting visual cue (icon, callout line, or close-up "
+        "detail) that reinforces the benefit. Do not introduce any other benefits.",
+        f"Text overlay: a short benefit headline — \"{benefit}\" — "
+        "rendered as the primary copy. Optional one-line supporting caption "
+        "(maximum 6 words). High contrast, clean sans-serif.",
+        _common_listing_rules(),
+    ])
+
+
+def build_use_case_prompt(plan: dict, marketplace: str) -> str:
+    """Use-case slide — lifestyle image showing the product in real use."""
+    use_case = plan.get("use_case", "in everyday use")
+    title = plan.get("title", "the product")
+    return "\n\n".join([
+        f"You are generating the USE-CASE (lifestyle) listing image for: {title}.",
+        f"Scenario: {use_case}",
+        f"Marketplace style: {_marketplace_style(marketplace)}",
+        "Composition: a believable lifestyle scene where the product is naturally "
+        "in use as the clear focal point. Soft natural lighting, plausible "
+        "real-world environment, no other competing products.",
+        "Text overlay: a single short caption describing the moment of use "
+        "(max 5 words), placed where it does not cover the product or the user's face.",
+        _common_listing_rules(),
+    ])
+
+
+def build_details_prompt(plan: dict, marketplace: str) -> str:
+    """Details slide — close-up showcasing 1–2 specific product details."""
+    details: list[str] = plan.get("details", []) or []
+    detail_text = ", ".join(details[:2]) if details else "key construction details"
+    title = plan.get("title", "the product")
+    return "\n\n".join([
+        f"You are generating the DETAILS (close-up) listing image for: {title}.",
+        f"Highlight these specific details: {detail_text}.",
+        f"Marketplace style: {_marketplace_style(marketplace)}",
+        "Composition: a tight close-up of the product showing the highlighted "
+        "details with crisp focus and macro-level clarity. Subtle directional "
+        "lighting that brings out texture, finish, and material quality.",
+        "Text overlay: 1–2 short labeled callouts pointing to the highlighted "
+        "details (each 1–3 words, e.g. \"Stainless steel blades\"). Clean thin "
+        "leader lines, no clutter.",
+        _common_listing_rules(),
+    ])
+
+
+def build_final_prompt(plan: dict, marketplace: str) -> str:
+    """Final selling slide — strong closing CTA-style image."""
+    final_message = plan.get("final_message", "Make it yours today")
+    title = plan.get("title", "the product")
+    return "\n\n".join([
+        f"You are generating the FINAL (closing) listing image for: {title}.",
+        f"Marketplace style: {_marketplace_style(marketplace)}",
+        "Composition: a confident, conversion-oriented closing slide. "
+        "The product is presented in a strong final framing — slightly "
+        "more dramatic lighting and a richer background block than the hero — "
+        "to leave a strong last impression. No props that distract from the product.",
+        f"Text overlay: one bold closing headline — \"{final_message}\" — "
+        "as the dominant text element. Optional one-line micro-copy underneath "
+        "(maximum 4 words). High contrast, large readable type.",
+        _common_listing_rules(),
+    ])
+
+
 def build_ugc_prompt(
     use_case: str,
     wishes: str,

@@ -52,8 +52,6 @@ export default function UploadForm({ onFile, currentFile }: UploadFormProps) {
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">Product photo</label>
-
       {preview ? (
         <div className="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
           {/* eslint-disable-next-line @next/next/no-img-element */}

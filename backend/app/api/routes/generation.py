@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user, get_db
 from app.core.config import settings
-from app.core.pricing import credits_for_count
+from app.core.pricing import LISTING_PACK_CREDITS, credits_for_count
 from app.models.generation import Generation, GenerationStatus, GenerationType
 from app.models.user import User
 from app.schemas.generation import (
@@ -25,7 +25,7 @@ from app.schemas.generation import (
     GenerationStartResponse,
     GenerationsListResponse,
 )
-from app.services import image_service, storage_service
+from app.services import image_service, listing_pack_service, storage_service
 
 logger = logging.getLogger(__name__)
 
@@ -343,6 +343,205 @@ async def generate_fat_maker(
 
 
 # ---------------------------------------------------------------------------
+# POST /generate/listing-pack
+# ---------------------------------------------------------------------------
+
+_VALID_MARKETPLACES = {"kaspi", "wildberries"}
+
+
+def _parse_benefits(raw: str | None) -> list[str] | None:
+    """Accept either a JSON array string or a comma-separated string."""
+    if not raw:
+        return None
+    s = raw.strip()
+    if not s:
+        return None
+    if s.startswith("["):
+        try:
+            parsed = __import__("json").loads(s)
+            if isinstance(parsed, list):
+                return [str(x).strip() for x in parsed if str(x).strip()]
+        except Exception:
+            pass
+    return [b.strip() for b in s.split(",") if b.strip()]
+
+
+@generate_router.post("/listing-pack", response_model=GenerationStartResponse, status_code=202)
+async def generate_listing_pack(
+    background_tasks: BackgroundTasks,
+    image: UploadFile = File(..., description="Product photo (JPEG/PNG/WebP, max 10 MB)"),
+    title: str = Form(default="", description="Optional product title (overrides AI)"),
+    benefits: str = Form(
+        default="",
+        description="Optional benefits — JSON array string or comma-separated list",
+    ),
+    marketplace: str = Form(default="kaspi", description="kaspi | wildberries"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> GenerationStartResponse:
+    """Start an async Listing Pack generation: produces 5–7 marketplace-ready slides."""
+    marketplace = marketplace.lower().strip()
+    if marketplace not in _VALID_MARKETPLACES:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"marketplace must be one of {sorted(_VALID_MARKETPLACES)}",
+        )
+
+    cost = LISTING_PACK_CREDITS
+    if current_user.credits_balance < cost:
+        raise HTTPException(
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail=(
+                f"Insufficient credits: need {cost}, have {current_user.credits_balance}. "
+                "Top up to continue."
+            ),
+        )
+
+    image_bytes = await image.read()
+    _validate_and_read_image(image, image_bytes)
+
+    user_title = title.strip() or None
+    user_benefits = _parse_benefits(benefits)
+
+    generation_id = uuid.uuid4()
+    ext = (image.content_type or "image/jpeg").split("/")[-1]
+    source_key = f"{current_user.id}/{generation_id}/source.{ext}"
+
+    source_url = await storage_service.upload_bytes(
+        settings.SUPABASE_BUCKET_UPLOADS,
+        source_key,
+        image_bytes,
+        image.content_type or "image/jpeg",
+    )
+
+    generation = Generation(
+        id=generation_id,
+        user_id=current_user.id,
+        type=GenerationType.listing_pack,
+        status=GenerationStatus.pending,
+        input_data={
+            "title": user_title or "",
+            "benefits": user_benefits or [],
+            "marketplace": marketplace,
+            "credits_charged": cost,
+        },
+        source_image_url=source_url,
+        image_urls=[],
+    )
+    current_user.credits_balance -= cost
+    db.add(generation)
+    await db.commit()
+
+    background_tasks.add_task(
+        listing_pack_service.generate_listing_pack,
+        generation_id=generation_id,
+        user_id=current_user.id,
+        image_bytes=image_bytes,
+        user_title=user_title,
+        user_benefits=user_benefits,
+        marketplace=marketplace,
+    )
+
+    logger.info(
+        "Queued listing-pack generation %s for user %s (marketplace=%s)",
+        generation_id,
+        current_user.id,
+        marketplace,
+    )
+    return GenerationStartResponse(
+        generation_id=generation_id,
+        status=GenerationStatus.pending,
+    )
+
+
+# ---------------------------------------------------------------------------
+# POST /generate/chess  (mini app)
+# ---------------------------------------------------------------------------
+
+_VALID_CHESS_PIECES = {"pawn", "rook", "knight", "bishop", "queen", "king"}
+
+
+@generate_router.post("/chess", response_model=GenerationStartResponse, status_code=202)
+async def generate_chess(
+    background_tasks: BackgroundTasks,
+    image: UploadFile = File(..., description="Photo of the person (JPEG/PNG/WebP, max 10 MB)"),
+    piece: str = Form(default="pawn", description="Chess piece: pawn, rook, knight, bishop, queen, king"),
+    wishes: str = Form(default="", description="Optional creative wishes"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> GenerationStartResponse:
+    """Start an async 'Chess' mini-app generation."""
+    piece = piece.lower().strip()
+    if piece not in _VALID_CHESS_PIECES:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Invalid piece '{piece}'. Must be one of: {', '.join(sorted(_VALID_CHESS_PIECES))}.",
+        )
+
+    cost = credits_for_count(1)
+    if current_user.credits_balance < cost:
+        raise HTTPException(
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail=(
+                f"Insufficient credits: need {cost}, have {current_user.credits_balance}. "
+                "Top up to continue."
+            ),
+        )
+
+    image_bytes = await image.read()
+    _validate_and_read_image(image, image_bytes)
+
+    generation_id = uuid.uuid4()
+    ext = (image.content_type or "image/jpeg").split("/")[-1]
+    source_key = f"{current_user.id}/{generation_id}/source.{ext}"
+
+    source_url = await storage_service.upload_bytes(
+        settings.SUPABASE_BUCKET_UPLOADS,
+        source_key,
+        image_bytes,
+        image.content_type or "image/jpeg",
+    )
+
+    generation = Generation(
+        id=generation_id,
+        user_id=current_user.id,
+        type=GenerationType.mini_app,
+        status=GenerationStatus.pending,
+        input_data={
+            "app_id": "chess",
+            "piece": piece,
+            "wishes": wishes.strip(),
+            "credits_charged": cost,
+        },
+        source_image_url=source_url,
+        image_urls=[],
+    )
+    current_user.credits_balance -= cost
+    db.add(generation)
+    await db.commit()
+
+    background_tasks.add_task(
+        image_service.generate_chess,
+        generation_id=generation_id,
+        user_id=current_user.id,
+        image_bytes=image_bytes,
+        piece=piece,
+        wishes=wishes.strip(),
+    )
+
+    logger.info(
+        "Queued chess generation %s for user %s (piece=%s)",
+        generation_id,
+        current_user.id,
+        piece,
+    )
+    return GenerationStartResponse(
+        generation_id=generation_id,
+        status=GenerationStatus.pending,
+    )
+
+
+# ---------------------------------------------------------------------------
 # POST /generate/ugc
 # ---------------------------------------------------------------------------
 
@@ -573,8 +772,11 @@ async def delete_generation(
             exc,
         )
 
-    # Delete all generated images
-    for url in generation.image_urls or []:
+    # Delete all generated images.
+    # image_urls is either a list of URL strings (legacy) or a list of
+    # {type, index, url} objects (listing_pack).
+    for entry in generation.image_urls or []:
+        url = entry["url"] if isinstance(entry, dict) else entry
         try:
             bucket, key = storage_service.extract_bucket_and_key(url)
             await storage_service.delete_object(bucket, key)

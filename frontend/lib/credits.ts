@@ -12,6 +12,8 @@ export const CREDITS_BY_COUNT: Record<number, number> = {
   3: 14,
   4: 17,
 };
+export const LISTING_PACK_CREDITS = 25;
+export const GROWTH_TURN_CREDITS = 0.5;
 
 export const TOPUP_PACKS: TopupPack[] = [
   { id: 'basic', credits: 50, price_usd: 3, name: 'Basic' },

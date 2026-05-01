@@ -42,6 +42,11 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str
     GEMINI_IMAGE_MODEL: str = "gemini-3-pro-image-preview"
 
+    # OpenAI (used for product analysis in listing-pack pipeline)
+    OPENAI_API_KEY: str
+    OPENAI_MODEL: str = "gpt-4o-mini"
+    OPENAI_TIMEOUT: float = 45.0
+
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v: str | list) -> list[str]:

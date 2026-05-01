@@ -1,6 +1,7 @@
 import uuid
+from decimal import Decimal
 
-from sqlalchemy import Index, Integer, String
+from sqlalchemy import Index, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.pricing import SIGNUP_CREDITS_GRANT
@@ -18,10 +19,10 @@ class User(TimestampMixin, Base):
     email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     avatar: Mapped[str | None] = mapped_column(String(1000), nullable=True)
-    credits_balance: Mapped[int] = mapped_column(
-        Integer,
+    credits_balance: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2),
         nullable=False,
-        default=SIGNUP_CREDITS_GRANT,
+        default=lambda: Decimal(str(SIGNUP_CREDITS_GRANT)),
         server_default=str(SIGNUP_CREDITS_GRANT),
     )
 

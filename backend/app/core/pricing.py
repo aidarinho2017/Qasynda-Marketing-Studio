@@ -2,10 +2,22 @@
 
 Centralised so frontend and backend agree on costs. The bundled prices for
 2/3/4 images include a small discount vs. the per-image rate.
+
+User.credits_balance is Decimal-backed in the DB so we can charge sub-credit
+amounts (like 0.5 for growth-coach turns). Whole-credit costs stay as ints —
+Decimal arithmetic with int works cleanly; with float it doesn't.
 """
+
+from decimal import Decimal
 
 CREDITS_PER_IMAGE: int = 5
 SIGNUP_CREDITS_GRANT: int = 5
+
+# Flat cost for the listing-pack pipeline (5–7 typed images + LLM analysis).
+LISTING_PACK_CREDITS: int = 25
+
+# AI Growth Manager — flat cost per assistant turn (sub-credit).
+GROWTH_TURN_CREDITS: Decimal = Decimal("0.5")
 
 CREDITS_BY_COUNT: dict[int, int] = {
     1: 5,

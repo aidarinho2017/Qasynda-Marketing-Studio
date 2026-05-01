@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -17,9 +18,12 @@ class GenerationOut(BaseModel):
     status: GenerationStatus
     input_data: dict
     source_image_url: str
-    image_urls: list[str]
+    # Flat list of URL strings (legacy generations) OR list of
+    # {type, index, url} objects (listing_pack).
+    image_urls: list[Any]
     prompt_used: str | None
     error_message: str | None
+    content_plan: dict | None = None
     created_at: datetime
     updated_at: datetime
 

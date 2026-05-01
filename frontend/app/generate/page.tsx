@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import UploadForm from '@/components/UploadForm';
+import { popHandoff } from '@/app/growth-manager/lib/imageHandoff';
 import GenerationsGallery, {
   type GenerationsGalleryHandle,
 } from '@/components/GenerationsGallery';
@@ -311,14 +312,16 @@ function MarketplaceForm({
   onSubmit,
   submitting,
   error,
+  initialDescription = '',
 }: {
   file: File | null;
   onFile: (f: File) => void;
   onSubmit: (form: FormData) => Promise<void>;
   submitting: boolean;
   error: string | null;
+  initialDescription?: string;
 }) {
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(initialDescription);
   const [advanced, setAdvanced] = useState<AdvancedState>({
     style: 'minimal',
     layout: 'square',
@@ -326,6 +329,14 @@ function MarketplaceForm({
     count: 4,
   });
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
+
+  // Sync if a handoff description arrives after mount.
+  useEffect(() => {
+    if (initialDescription && !description) {
+      setDescription(initialDescription);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialDescription]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -349,7 +360,10 @@ function MarketplaceForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <UploadForm onFile={onFile} currentFile={file} />
+      <div>
+        <Label>Product photo</Label>
+        <UploadForm onFile={onFile} currentFile={file} />
+      </div>
 
       <FormGroup label="Tell about your product">
         <Textarea
@@ -438,7 +452,10 @@ function UGCForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <UploadForm onFile={onFile} currentFile={file} />
+      <div>
+        <Label>Product photo</Label>
+        <UploadForm onFile={onFile} currentFile={file} />
+      </div>
 
       <FormGroup label="How is the product being used?">
         <Textarea
@@ -517,7 +534,10 @@ function EnhanceForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <UploadForm onFile={onFile} currentFile={file} />
+      <div>
+        <Label>Product photo</Label>
+        <UploadForm onFile={onFile} currentFile={file} />
+      </div>
 
       <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 text-sm text-indigo-900 leading-relaxed">
         We&apos;ll automatically:
@@ -561,11 +581,23 @@ function GenerateContent() {
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [handoffDescription, setHandoffDescription] = useState<string>('');
   const galleryRef = useRef<GenerationsGalleryHandle>(null);
 
   useEffect(() => {
     if (!isAuthenticated()) router.replace('/');
   }, [router]);
+
+  // Pick up an image-gen handoff coming from the AI Growth Manager.
+  useEffect(() => {
+    const key = searchParams.get('handoff');
+    if (!key) return;
+    const description = popHandoff(key);
+    if (description) {
+      setHandoffDescription(description);
+      setMode('marketplace');
+    }
+  }, [searchParams]);
 
   const switchMode = (m: 'marketplace' | 'ugc' | 'enhance') => {
     setMode(m);
@@ -661,6 +693,7 @@ function GenerateContent() {
                   onSubmit={handleSubmit}
                   submitting={submitting}
                   error={error}
+                  initialDescription={handoffDescription}
                 />
               )}
               {mode === 'ugc' && (
