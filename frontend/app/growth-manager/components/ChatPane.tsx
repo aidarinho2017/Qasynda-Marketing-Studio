@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Loader2, Send, Compass } from 'lucide-react';
 import { GROWTH_TURN_CREDITS, useCredits } from '@/lib/credits';
 import AssistantMessage from './AssistantMessage';
@@ -152,11 +152,19 @@ function Composer({
   const { balance } = useCredits();
   const insufficient = balance !== null && balance < GROWTH_TURN_CREDITS;
   const disabled = sending || !draft.trim() || insufficient;
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [draft]);
 
   return (
     <div className="flex items-end gap-2 bg-white border border-gray-200 rounded-2xl shadow-sm focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/20 px-3 py-2">
       <textarea
-        rows={1}
+        ref={textareaRef}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={onKeyDown}
@@ -165,9 +173,9 @@ function Composer({
             ? `Need ${GROWTH_TURN_CREDITS} credits — top up to chat`
             : 'Ask anything…'
         }
-        className="flex-1 resize-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none py-1.5 max-h-40"
+        className="flex-1 resize-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none py-1.5 overflow-y-auto"
         disabled={sending}
-        style={{ minHeight: '24px' }}
+        style={{ minHeight: '24px', maxHeight: '14rem' }}
       />
       <button
         onClick={submit}

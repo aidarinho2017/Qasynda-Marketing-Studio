@@ -45,6 +45,10 @@ function setBalance(next: number | null) {
   notify();
 }
 
+export function setCreditsBalance(value: number): void {
+  setBalance(value);
+}
+
 export async function refreshCredits(): Promise<number | null> {
   try {
     const me = await api.get<User>('/me');

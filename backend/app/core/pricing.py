@@ -19,6 +19,15 @@ LISTING_PACK_CREDITS: int = 25
 # AI Growth Manager — flat cost per assistant turn (sub-credit).
 GROWTH_TURN_CREDITS: Decimal = Decimal("0.5")
 
+# Lead Search — base campaign delivers 20 leads, top-ups add 20 more each.
+# Capped at MAX_ROUNDS total batches (base + 4 top-ups = 100 leads).
+LEAD_CAMPAIGN_BASE_CREDITS: int = 20
+LEAD_CAMPAIGN_TOPUP_CREDITS: int = 15
+LEAD_CAMPAIGN_BASE_SIZE: int = 20
+LEAD_CAMPAIGN_TOPUP_SIZE: int = 20
+LEAD_CAMPAIGN_MAX_ROUNDS: int = 5
+LEAD_RECENCY_DAYS: int = 30
+
 CREDITS_BY_COUNT: dict[int, int] = {
     1: 5,
     2: 9,

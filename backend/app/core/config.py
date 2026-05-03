@@ -47,6 +47,15 @@ class Settings(BaseSettings):
     OPENAI_MODEL: str = "gpt-4o-mini"
     OPENAI_TIMEOUT: float = 45.0
 
+    # Lead Search — free-channel API credentials. All optional: a missing key
+    # disables that collector, others continue.
+    REDDIT_CLIENT_ID: str | None = None
+    REDDIT_CLIENT_SECRET: str | None = None
+    REDDIT_USER_AGENT: str = "QasyndaMarketingStudio/0.1 (lead-search)"
+    YOUTUBE_API_KEY: str | None = None
+    LEAD_CLASSIFIER_MODEL: str = "gpt-4o-mini"
+    LEAD_ENRICHER_MODEL: str = "gpt-4o-mini"
+
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v: str | list) -> list[str]:

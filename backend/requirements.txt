@@ -11,5 +11,5 @@ httpx==0.28.1
 aioboto3
 google-genai==1.11.0
 google-auth==2.40.1
-openai==1.54.0
+openai>=2.0.0
 python-dotenv==1.1.0

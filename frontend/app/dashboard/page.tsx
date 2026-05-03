@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, Compass, Film, LayoutGrid, Package, Wand2 } from 'lucide-react';
+import { ArrowRight, Compass, Film, LayoutGrid, Package, Target, Wand2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { isAuthenticated } from '@/lib/auth';
 
@@ -60,6 +60,12 @@ export default function DashboardPage() {
             icon={<Compass className="w-6 h-6 text-indigo-600" />}
             title="AI Growth Manager"
             description="Your guided coach — from product idea to ICP, offer, ad hooks, and visuals. Step by step."
+          />
+          <ChoiceCard
+            href="/lead-search"
+            icon={<Target className="w-6 h-6 text-indigo-600" />}
+            title="Lead Search"
+            description="Describe your ICP. AI picks the best free channels (Reddit, YouTube, HN) and surfaces high-intent leads."
           />
         </div>
       </main>

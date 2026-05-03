@@ -1,11 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Menu, Plus } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { isAuthenticated } from '@/lib/auth';
-import { refreshCredits } from '@/lib/credits';
+import { setCreditsBalance } from '@/lib/credits';
 import ChatPane from './components/ChatPane';
 import HistoryDrawer from './components/HistoryDrawer';
 import { coachApi } from './lib/coachApi';
@@ -28,6 +28,7 @@ export default function GrowthManagerPage() {
   const [error, setError] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [animatingMessageId, setAnimatingMessageId] = useState<string | null>(null);
+  const suppressSelectLoadRef = useRef(false);
 
   useEffect(() => {
     if (!isAuthenticated()) router.replace('/');
@@ -52,6 +53,11 @@ export default function GrowthManagerPage() {
 
   // Load full conversation when selection changes.
   useEffect(() => {
+    // Suppress when handleSend just created a new conversation — we already have the data.
+    if (suppressSelectLoadRef.current) {
+      suppressSelectLoadRef.current = false;
+      return;
+    }
     setAnimatingMessageId(null);
     if (!selectedId) {
       setActiveConvo(null);
@@ -107,6 +113,8 @@ export default function GrowthManagerPage() {
           },
           ...prev,
         ]);
+        // Suppress the selectedId effect so it doesn't re-fetch and wipe the optimistic message.
+        suppressSelectLoadRef.current = true;
         setSelectedId(c.id);
         setActiveConvo(c);
       } catch (err) {
@@ -130,26 +138,40 @@ export default function GrowthManagerPage() {
     setSending(true);
 
     try {
-      await coachApi.send(convoId!, message, sendModule);
-      const fresh = await coachApi.get(convoId!);
-      setActiveConvo(fresh);
-      setModule(fresh.current_module);
-      const lastAssistant = [...fresh.messages].reverse().find((m) => m.role === 'assistant');
-      if (lastAssistant) setAnimatingMessageId(lastAssistant.id);
+      const turnResp = await coachApi.send(convoId!, message, sendModule);
+
+      // Derive new title client-side (mirrors backend logic) so we don't need a re-fetch.
+      const newTitle = (activeConvo?.title === 'New conversation' || !activeConvo)
+        ? message.slice(0, 60).trim()
+        : activeConvo.title;
+
+      setActiveConvo((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          messages: [...prev.messages, turnResp.message],
+          current_module: sendModule,
+          context: turnResp.conversation_context,
+          last_message_at: new Date().toISOString(),
+          title: newTitle,
+        };
+      });
+      setModule(sendModule);
+      setAnimatingMessageId(turnResp.message.id.toString());
       setConversations((prev) =>
         prev.map((c) =>
           c.id === convoId
             ? {
                 ...c,
-                title: fresh.title,
-                current_module: fresh.current_module,
-                last_message_at: fresh.last_message_at,
-                updated_at: fresh.updated_at,
+                title: newTitle,
+                current_module: sendModule,
+                last_message_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
               }
             : c,
         ),
       );
-      await refreshCredits();
+      setCreditsBalance(turnResp.credits_balance);
     } catch (err) {
       setActiveConvo((prev) =>
         prev
