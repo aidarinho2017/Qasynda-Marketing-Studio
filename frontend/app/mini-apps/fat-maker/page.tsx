@@ -71,8 +71,8 @@ export default function FatMakerPage() {
         </button>
 
         <div className="mb-8 flex items-start gap-3">
-          <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center shrink-0">
-            <Smile className="w-5 h-5 text-indigo-600" />
+          <div className="w-10 h-10 bg-brand-50 rounded-xl flex items-center justify-center shrink-0">
+            <Smile className="w-5 h-5 text-brand-600" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Fat Maker</h1>
@@ -105,7 +105,7 @@ export default function FatMakerPage() {
                   placeholder="E.g. 'add a double chin', 'make him look like a sumo wrestler', 'keep it subtle'."
                   value={wishes}
                   onChange={(e) => setWishes(e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors resize-y"
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-colors resize-y"
                 />
               </div>
 
@@ -160,7 +160,7 @@ function FatnessSlider({
         <label className="block text-sm font-medium text-gray-700">
           Fatness scale
         </label>
-        <span className="text-sm font-semibold text-indigo-600 tabular-nums">
+        <span className="text-sm font-semibold text-brand-600 tabular-nums">
           {value}/10 · {labelFor(value)}
         </span>
       </div>
@@ -170,7 +170,7 @@ function FatnessSlider({
         max={10}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-indigo-600 cursor-pointer"
+        className="w-full accent-brand-600 cursor-pointer"
       />
       <div className="flex justify-between text-xs text-gray-400 mt-1">
         <span>Subtle</span>
@@ -197,7 +197,7 @@ function FatMakerSubmit({
     <button
       type="submit"
       disabled={disabled}
-      className="w-full py-3 px-6 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+      className="w-full py-3 px-6 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
     >
       {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
       {submitting

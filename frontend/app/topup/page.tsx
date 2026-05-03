@@ -33,7 +33,7 @@ export default function TopupPage() {
         </button>
 
         <div className="mb-2 flex items-center gap-2">
-          <Coins className="w-5 h-5 text-indigo-600" />
+          <Coins className="w-5 h-5 text-brand-600" />
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Top up credits</h1>
         </div>
         <p className="text-sm text-gray-500 mb-8">
@@ -59,11 +59,11 @@ export default function TopupPage() {
                 key={pack.id}
                 className={[
                   'relative flex flex-col bg-white rounded-2xl border p-6 shadow-sm transition-all',
-                  isBest ? 'border-indigo-300 ring-1 ring-indigo-200' : 'border-gray-100',
+                  isBest ? 'border-brand-300 ring-1 ring-brand-200' : 'border-gray-100',
                 ].join(' ')}
               >
                 {isBest && (
-                  <span className="absolute -top-2.5 left-6 px-2 py-0.5 bg-indigo-600 text-white text-[11px] font-semibold rounded-full">
+                  <span className="absolute -top-2.5 left-6 px-2 py-0.5 bg-brand-600 text-white text-[11px] font-semibold rounded-full">
                     Best value
                   </span>
                 )}
@@ -84,7 +84,7 @@ export default function TopupPage() {
                     className={[
                       'w-full py-2.5 px-4 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2',
                       isBest
-                        ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                        ? 'bg-brand-600 text-white hover:bg-brand-700'
                         : 'bg-gray-900 text-white hover:bg-gray-800',
                     ].join(' ')}
                   >

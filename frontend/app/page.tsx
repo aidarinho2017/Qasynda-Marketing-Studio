@@ -14,10 +14,13 @@ const BRAND_GREEN = '#89F336';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? '';
 
+type AuthTab = 'signin' | 'register';
+
 export default function LandingPage() {
   const router = useRouter();
 
   const [authOpen, setAuthOpen] = useState(false);
+  const [authTab, setAuthTab] = useState<AuthTab>('signin');
   const [authError, setAuthError] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
 
@@ -25,22 +28,61 @@ export default function LandingPage() {
     if (isAuthenticated()) router.replace('/dashboard');
   }, [router]);
 
+  const finishAuth = (data: TokenResponse) => {
+    setToken(data.access_token);
+    setUser({ name: data.user.name, avatar: data.user.avatar });
+    router.push('/dashboard');
+  };
+
   const handleGoogleSuccess = async (credential: string) => {
     setAuthLoading(true);
     setAuthError(null);
     try {
       const data = await api.post<TokenResponse>('/auth/google', { id_token: credential });
-      setToken(data.access_token);
-      setUser({ name: data.user.name, avatar: data.user.avatar });
-      router.push('/dashboard');
+      finishAuth(data);
     } catch (err) {
       setAuthError(err instanceof Error ? err.message : 'Authentication failed.');
       setAuthLoading(false);
     }
   };
 
-  const openAuth = () => {
+  const handleEmailSignin = async (email: string, password: string) => {
+    setAuthLoading(true);
     setAuthError(null);
+    try {
+      const data = await api.post<TokenResponse>('/auth/login', { email, password });
+      finishAuth(data);
+    } catch (err) {
+      setAuthError(err instanceof Error ? err.message : 'Sign-in failed.');
+      setAuthLoading(false);
+    }
+  };
+
+  const handleEmailRegister = async (
+    first_name: string,
+    last_name: string,
+    email: string,
+    password: string,
+  ) => {
+    setAuthLoading(true);
+    setAuthError(null);
+    try {
+      const data = await api.post<TokenResponse>('/auth/register', {
+        first_name,
+        last_name,
+        email,
+        password,
+      });
+      finishAuth(data);
+    } catch (err) {
+      setAuthError(err instanceof Error ? err.message : 'Registration failed.');
+      setAuthLoading(false);
+    }
+  };
+
+  const openAuth = (tab: AuthTab = 'signin') => {
+    setAuthError(null);
+    setAuthTab(tab);
     setAuthOpen(true);
   };
 
@@ -65,10 +107,15 @@ export default function LandingPage() {
 
       {authOpen && (
         <AuthModal
+          tab={authTab}
+          onTabChange={setAuthTab}
           onClose={() => setAuthOpen(false)}
-          onSuccess={handleGoogleSuccess}
+          onGoogleSuccess={handleGoogleSuccess}
+          onEmailSignin={handleEmailSignin}
+          onEmailRegister={handleEmailRegister}
           loading={authLoading}
           error={authError}
+          clearError={() => setAuthError(null)}
         />
       )}
     </div>
@@ -78,20 +125,20 @@ export default function LandingPage() {
 
 // ─── Navbar ──────────────────────────────────────────────────────────────────
 
-function Navbar({ onAuth }: { onAuth: () => void }) {
+function Navbar({ onAuth }: { onAuth: (tab?: AuthTab) => void }) {
   return (
     <header className="border-b border-gray-100">
       <div className="max-w-6xl mx-auto h-16 px-6 flex items-center justify-between">
         <span className="text-[15px] font-semibold tracking-tight">Qasynda</span>
         <nav className="flex items-center gap-1">
           <button
-            onClick={onAuth}
+            onClick={() => onAuth('signin')}
             className="text-sm text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md transition-colors"
           >
             Login
           </button>
           <button
-            onClick={onAuth}
+            onClick={() => onAuth('register')}
             style={{ backgroundColor: BRAND_GREEN }}
             className="text-sm font-semibold text-gray-900 hover:brightness-95 rounded-md px-4 py-2 transition-all"
           >
@@ -514,16 +561,52 @@ function Footer() {
 // ─── Auth Modal ──────────────────────────────────────────────────────────────
 
 function AuthModal({
+  tab,
+  onTabChange,
   onClose,
-  onSuccess,
+  onGoogleSuccess,
+  onEmailSignin,
+  onEmailRegister,
   loading,
   error,
+  clearError,
 }: {
+  tab: AuthTab;
+  onTabChange: (tab: AuthTab) => void;
   onClose: () => void;
-  onSuccess: (credential: string) => Promise<void>;
+  onGoogleSuccess: (credential: string) => Promise<void>;
+  onEmailSignin: (email: string, password: string) => Promise<void>;
+  onEmailRegister: (
+    first_name: string,
+    last_name: string,
+    email: string,
+    password: string,
+  ) => Promise<void>;
   loading: boolean;
   error: string | null;
+  clearError: () => void;
 }) {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const switchTab = (next: AuthTab) => {
+    if (next === tab) return;
+    clearError();
+    onTabChange(next);
+  };
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loading) return;
+    if (tab === 'signin') {
+      onEmailSignin(email, password);
+    } else {
+      onEmailRegister(firstName, lastName, email, password);
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 bg-gray-900/40 flex items-center justify-center p-4"
@@ -533,43 +616,137 @@ function AuthModal({
         className="bg-white rounded-2xl shadow-xl border border-gray-100 max-w-sm w-full p-8"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-lg font-semibold text-gray-900">Sign in to Qasynda</h3>
+        <h3 className="text-lg font-semibold text-gray-900">
+          {tab === 'signin' ? 'Sign in to Qasynda' : 'Create your Qasynda account'}
+        </h3>
         <p className="mt-1 text-sm text-gray-500">
-          Continue with Google to start generating images.
+          {tab === 'signin'
+            ? 'Welcome back. Use Google or your email to continue.'
+            : 'Start generating images in seconds.'}
         </p>
 
-        <div className="mt-6 flex justify-center min-h-[44px] items-center">
-          {loading ? (
-            <span className="text-sm text-gray-500">Signing in…</span>
-          ) : GOOGLE_CLIENT_ID ? (
+        <div className="mt-5 grid grid-cols-2 gap-1 rounded-lg bg-gray-100 p-1">
+          <button
+            type="button"
+            onClick={() => switchTab('signin')}
+            className={[
+              'text-sm font-medium py-1.5 rounded-md transition-colors',
+              tab === 'signin'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-900',
+            ].join(' ')}
+          >
+            Sign in
+          </button>
+          <button
+            type="button"
+            onClick={() => switchTab('register')}
+            className={[
+              'text-sm font-medium py-1.5 rounded-md transition-colors',
+              tab === 'register'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-500 hover:text-gray-900',
+            ].join(' ')}
+          >
+            Register
+          </button>
+        </div>
+
+        <div className="mt-5 flex justify-center min-h-[44px] items-center">
+          {GOOGLE_CLIENT_ID ? (
             <GoogleLogin
               onSuccess={(res) => {
-                if (res.credential) onSuccess(res.credential);
+                if (res.credential) onGoogleSuccess(res.credential);
               }}
               onError={() => {}}
               theme="outline"
               size="large"
               shape="rectangular"
-              text="continue_with"
+              text={tab === 'signin' ? 'signin_with' : 'signup_with'}
               locale="en"
             />
           ) : (
             <p className="text-xs text-gray-500 text-center">
               Set <code className="font-mono">NEXT_PUBLIC_GOOGLE_CLIENT_ID</code> in{' '}
-              <code className="font-mono">.env.local</code> to enable sign in.
+              <code className="font-mono">.env.local</code> to enable Google sign in.
             </p>
           )}
         </div>
 
-        {error && (
-          <p className="mt-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2">
-            {error}
-          </p>
-        )}
+        <div className="mt-5 flex items-center gap-3 text-xs text-gray-400">
+          <div className="flex-1 h-px bg-gray-200" />
+          <span>or</span>
+          <div className="flex-1 h-px bg-gray-200" />
+        </div>
+
+        <form onSubmit={submit} className="mt-5 space-y-3">
+          {tab === 'register' && (
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                required
+                maxLength={100}
+                placeholder="First name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                disabled={loading}
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 disabled:bg-gray-50"
+              />
+              <input
+                type="text"
+                required
+                maxLength={100}
+                placeholder="Last name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                disabled={loading}
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 disabled:bg-gray-50"
+              />
+            </div>
+          )}
+          <input
+            type="email"
+            required
+            autoComplete={tab === 'signin' ? 'email' : 'email'}
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={loading}
+            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 disabled:bg-gray-50"
+          />
+          <input
+            type="password"
+            required
+            minLength={tab === 'register' ? 8 : 1}
+            autoComplete={tab === 'signin' ? 'current-password' : 'new-password'}
+            placeholder={tab === 'register' ? 'Password (min 8 characters)' : 'Password'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
+            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 disabled:bg-gray-50"
+          />
+
+          {error && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{ backgroundColor: BRAND_GREEN }}
+            className="w-full py-2.5 text-sm font-semibold text-gray-900 rounded-md hover:brightness-95 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {loading
+              ? tab === 'signin' ? 'Signing in…' : 'Creating account…'
+              : tab === 'signin' ? 'Sign in' : 'Create account'}
+          </button>
+        </form>
 
         <button
           onClick={onClose}
-          className="mt-6 w-full text-sm text-gray-500 hover:text-gray-900 transition-colors"
+          className="mt-5 w-full text-sm text-gray-500 hover:text-gray-900 transition-colors"
         >
           Cancel
         </button>

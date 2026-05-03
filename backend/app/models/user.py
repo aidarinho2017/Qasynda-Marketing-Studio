@@ -15,10 +15,11 @@ class User(TimestampMixin, Base):
         primary_key=True,
         default=uuid.uuid4,
     )
-    google_sub: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    google_sub: Mapped[str | None] = mapped_column(String(255), nullable=True, unique=True)
     email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     avatar: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     credits_balance: Mapped[Decimal] = mapped_column(
         Numeric(10, 2),
         nullable=False,

@@ -110,7 +110,7 @@ export default function NewCampaignPage() {
               onChange={(e) => setRole(e.target.value)}
               maxLength={200}
               placeholder="B2B SaaS founders"
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </Field>
 
@@ -125,7 +125,7 @@ export default function NewCampaignPage() {
               maxLength={600}
               rows={3}
               placeholder="We help indie founders automate cold outreach without sounding spammy."
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-y"
             />
             <div className="text-xs text-gray-400 text-right">
               {problem.length} / 600
@@ -133,17 +133,17 @@ export default function NewCampaignPage() {
           </Field>
 
           <Field label="Niche keywords" hint="Optional. Press Enter or comma to add.">
-            <div className="flex flex-wrap gap-2 px-2 py-2 border border-gray-200 rounded-lg focus-within:ring-2 focus-within:ring-indigo-500">
+            <div className="flex flex-wrap gap-2 px-2 py-2 border border-gray-200 rounded-lg focus-within:ring-2 focus-within:ring-brand-500">
               {keywords.map((k) => (
                 <span
                   key={k}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 text-xs"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-50 text-brand-700 text-xs"
                 >
                   {k}
                   <button
                     type="button"
                     onClick={() => removeKeyword(k)}
-                    className="hover:text-indigo-900"
+                    className="hover:text-brand-900"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -168,7 +168,7 @@ export default function NewCampaignPage() {
               maxLength={1000}
               rows={3}
               placeholder="Avoid enterprise. Focus on indie devs and bootstrappers."
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-y"
             />
           </Field>
 
@@ -185,7 +185,7 @@ export default function NewCampaignPage() {
             <button
               type="submit"
               disabled={!canSubmit}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-medium"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-medium"
             >
               {submitting ? (
                 <>

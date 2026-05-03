@@ -96,7 +96,7 @@ export default function GenerationCard({ generation, onDelete }: GenerationCardP
           <div className="aspect-video flex flex-col items-center justify-center gap-3 text-gray-300">
             {generation.status === 'pending' || generation.status === 'processing' ? (
               <>
-                <Loader2 className="w-8 h-8 animate-spin text-indigo-300" />
+                <Loader2 className="w-8 h-8 animate-spin text-brand-300" />
                 <span className="text-xs text-gray-400">Generating…</span>
               </>
             ) : (
@@ -133,7 +133,7 @@ export default function GenerationCard({ generation, onDelete }: GenerationCardP
               href={imageUrlOf(generation.image_urls[0])}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+              className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-800 font-medium"
             >
               <Download className="w-3.5 h-3.5" />
               Download

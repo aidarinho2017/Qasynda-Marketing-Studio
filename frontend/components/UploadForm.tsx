@@ -80,14 +80,14 @@ export default function UploadForm({ onFile, currentFile }: UploadFormProps) {
           className={[
             'border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all',
             isDragging
-              ? 'border-indigo-400 bg-indigo-50'
-              : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50',
+              ? 'border-brand-400 bg-brand-50'
+              : 'border-gray-200 hover:border-brand-300 hover:bg-gray-50',
           ].join(' ')}
         >
           <UploadCloud className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <p className="text-sm text-gray-600">
             Drag & drop or{' '}
-            <span className="text-indigo-600 font-medium">browse</span>
+            <span className="text-brand-600 font-medium">browse</span>
           </p>
           <p className="text-xs text-gray-400 mt-1">JPEG, PNG, WebP · max 10 MB</p>
         </div>

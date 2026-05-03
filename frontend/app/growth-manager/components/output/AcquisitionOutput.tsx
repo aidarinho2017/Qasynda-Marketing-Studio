@@ -26,7 +26,7 @@ export default function AcquisitionOutput({ data }: { data: AcquisitionStructure
               >
                 <p className="text-sm font-semibold text-gray-900 mb-1">{h.hook}</p>
                 {h.angle && <p className="text-xs text-gray-500 mb-1">Angle: {h.angle}</p>}
-                <span className="inline-block text-[10px] font-medium uppercase tracking-wide px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600">
+                <span className="inline-block text-[10px] font-medium uppercase tracking-wide px-1.5 py-0.5 rounded bg-brand-50 text-brand-600">
                   {h.format_hint}
                 </span>
               </div>
@@ -65,7 +65,7 @@ export default function AcquisitionOutput({ data }: { data: AcquisitionStructure
           <p className="text-sm text-gray-700 leading-relaxed mb-3">{data.visual_brief}</p>
           <button
             onClick={handGoToImageGen}
-            className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-colors"
+            className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-700 transition-colors"
           >
             <ImageIcon className="w-4 h-4" />
             Generate visuals

@@ -20,7 +20,7 @@ export default function MiniAppsPage() {
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 pt-24 pb-16">
         <div className="mb-10">
-          <div className="flex items-center gap-2 text-indigo-600 mb-2">
+          <div className="flex items-center gap-2 text-brand-600 mb-2">
             <Sparkles className="w-5 h-5" />
             <span className="text-sm font-semibold uppercase tracking-wide">Mini Apps</span>
           </div>
@@ -35,13 +35,13 @@ export default function MiniAppsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <MiniAppCard
             href="/mini-apps/fat-maker"
-            icon={<Smile className="w-6 h-6 text-indigo-600" />}
+            icon={<Smile className="w-6 h-6 text-brand-600" />}
             title="Fat Maker"
             description="Upload a photo of your friend and watch them get gradually rounder. Just for laughs."
           />
           <MiniAppCard
             href="/mini-apps/chess"
-            icon={<Crown className="w-6 h-6 text-indigo-600" />}
+            icon={<Crown className="w-6 h-6 text-brand-600" />}
             title="Chess"
             description="Turn your friend into a chess piece. Pawn them, knight them, or make them king."
           />
@@ -65,14 +65,14 @@ function MiniAppCard({
   return (
     <Link
       href={href}
-      className="group block p-6 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all"
+      className="group block p-6 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-brand-200 transition-all"
     >
-      <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mb-4">
+      <div className="w-12 h-12 bg-brand-50 rounded-xl flex items-center justify-center mb-4">
         {icon}
       </div>
       <h2 className="text-lg font-semibold text-gray-900 mb-1">{title}</h2>
       <p className="text-sm text-gray-500 leading-relaxed mb-4">{description}</p>
-      <span className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 group-hover:gap-2 transition-all">
+      <span className="inline-flex items-center gap-1 text-sm font-medium text-brand-600 group-hover:gap-2 transition-all">
         Open
         <ArrowRight className="w-4 h-4" />
       </span>

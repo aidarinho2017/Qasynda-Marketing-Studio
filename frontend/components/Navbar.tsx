@@ -18,11 +18,11 @@ export default function Navbar({ showUserMenu = false }: NavbarProps) {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href={showUserMenu ? '/dashboard' : '/'} className="flex items-center gap-2 group">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center group-hover:bg-indigo-700 transition-colors">
+          <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center group-hover:bg-brand-700 transition-colors">
             <Zap className="w-4 h-4 text-white" />
           </div>
           <span className="font-semibold text-gray-900 text-sm sm:text-base">
-            Qasynda<span className="text-indigo-600"> Studio</span>
+            Qasynda<span className="text-brand-600"> Studio</span>
           </span>
         </Link>
 
@@ -75,13 +75,13 @@ function CreditsBadge() {
     <Link
       href="/topup"
       title="Top up credits"
-      className="flex items-center gap-1 bg-indigo-50 border border-indigo-100 rounded-lg pl-2.5 pr-1 py-1 hover:bg-indigo-100 transition-colors"
+      className="flex items-center gap-1 bg-brand-50 border border-brand-100 rounded-lg pl-2.5 pr-1 py-1 hover:bg-brand-100 transition-colors"
     >
-      <Coins className="w-3.5 h-3.5 text-indigo-600" />
-      <span className="text-sm font-semibold text-indigo-700 tabular-nums min-w-[1.5rem] text-center">
+      <Coins className="w-3.5 h-3.5 text-brand-600" />
+      <span className="text-sm font-semibold text-brand-700 tabular-nums min-w-[1.5rem] text-center">
         {balance === null ? '—' : balance}
       </span>
-      <span className="ml-1 p-1 rounded-md text-indigo-600">
+      <span className="ml-1 p-1 rounded-md text-brand-600">
         <Plus className="w-3.5 h-3.5" />
       </span>
     </Link>

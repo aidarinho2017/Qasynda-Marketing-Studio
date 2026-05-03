@@ -65,7 +65,7 @@ export default function LeadSearchPage() {
         <div className="flex items-start justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <Target className="w-7 h-7 text-indigo-600" />
+              <Target className="w-7 h-7 text-brand-600" />
               Lead Search
             </h1>
             <p className="text-sm text-gray-500 mt-2 max-w-2xl">
@@ -76,7 +76,7 @@ export default function LeadSearchPage() {
           </div>
           <Link
             href="/lead-search/new"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium shadow-sm shrink-0"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium shadow-sm shrink-0"
           >
             <Plus className="w-4 h-4" />
             New campaign
@@ -108,7 +108,7 @@ export default function LeadSearchPage() {
 function EmptyState() {
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center">
-      <Target className="w-10 h-10 text-indigo-500 mx-auto mb-4" />
+      <Target className="w-10 h-10 text-brand-500 mx-auto mb-4" />
       <h3 className="text-lg font-semibold text-gray-900">No campaigns yet</h3>
       <p className="text-sm text-gray-500 mt-1 mb-5 max-w-sm mx-auto">
         Start by describing your ICP. We&apos;ll analyze it and refund your
@@ -116,7 +116,7 @@ function EmptyState() {
       </p>
       <Link
         href="/lead-search/new"
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium"
       >
         <Plus className="w-4 h-4" />
         Create your first campaign
@@ -130,7 +130,7 @@ function CampaignRow({ campaign }: { campaign: LeadCampaignSummary }) {
   return (
     <Link
       href={`/lead-search/${campaign.id}`}
-      className="group block p-5 bg-white rounded-xl border border-gray-100 hover:border-indigo-200 hover:shadow-sm transition-all"
+      className="group block p-5 bg-white rounded-xl border border-gray-100 hover:border-brand-200 hover:shadow-sm transition-all"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
@@ -147,7 +147,7 @@ function CampaignRow({ campaign }: { campaign: LeadCampaignSummary }) {
             {campaign.icp.problem}
           </p>
         </div>
-        <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-indigo-500 mt-1 shrink-0" />
+        <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-brand-500 mt-1 shrink-0" />
       </div>
 
       {isActive ? (
@@ -158,7 +158,7 @@ function CampaignRow({ campaign }: { campaign: LeadCampaignSummary }) {
           </div>
           <div className="h-1.5 bg-gray-100 rounded overflow-hidden">
             <div
-              className="h-full bg-indigo-500 transition-all"
+              className="h-full bg-brand-500 transition-all"
               style={{ width: `${campaign.progress}%` }}
             />
           </div>
@@ -180,9 +180,9 @@ function CampaignRow({ campaign }: { campaign: LeadCampaignSummary }) {
 function StatusPill({ status }: { status: LeadCampaignSummary['status'] }) {
   const config: Record<LeadCampaignSummary['status'], { label: string; cls: string }> = {
     pending: { label: 'Queued', cls: 'bg-gray-100 text-gray-700' },
-    selecting_channels: { label: 'Picking channels', cls: 'bg-indigo-50 text-indigo-700' },
-    discovering: { label: 'Scanning', cls: 'bg-indigo-50 text-indigo-700' },
-    enriching: { label: 'Scoring', cls: 'bg-indigo-50 text-indigo-700' },
+    selecting_channels: { label: 'Picking channels', cls: 'bg-brand-50 text-brand-700' },
+    discovering: { label: 'Scanning', cls: 'bg-brand-50 text-brand-700' },
+    enriching: { label: 'Scoring', cls: 'bg-brand-50 text-brand-700' },
     completed: { label: 'Completed', cls: 'bg-emerald-50 text-emerald-700' },
     refused: { label: 'Refunded · weak signal', cls: 'bg-amber-50 text-amber-700' },
     failed: { label: 'Failed · refunded', cls: 'bg-red-50 text-red-700' },

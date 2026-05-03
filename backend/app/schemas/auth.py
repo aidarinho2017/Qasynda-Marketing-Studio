@@ -1,10 +1,22 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 
 from app.schemas.user import UserOut
 
 
 class GoogleAuthRequest(BaseModel):
     id_token: str
+
+
+class RegisterRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=128)
+    first_name: str = Field(min_length=1, max_length=100)
+    last_name: str = Field(min_length=1, max_length=100)
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=1, max_length=128)
 
 
 class TokenResponse(BaseModel):

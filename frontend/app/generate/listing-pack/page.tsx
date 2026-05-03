@@ -72,8 +72,8 @@ export default function ListingPackPage() {
         </button>
 
         <div className="mb-8 flex items-start gap-3">
-          <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center shrink-0">
-            <Package className="w-5 h-5 text-indigo-600" />
+          <div className="w-10 h-10 bg-brand-50 rounded-xl flex items-center justify-center shrink-0">
+            <Package className="w-5 h-5 text-brand-600" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Product Listing Pack</h1>
@@ -108,7 +108,7 @@ export default function ListingPackPage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   maxLength={80}
-                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors"
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-colors"
                 />
                 <p className="text-xs text-gray-400 mt-1">
                   Leave empty and AI will name the product for you.
@@ -124,7 +124,7 @@ export default function ListingPackPage() {
                   placeholder="e.g. Powerful motor, Compact size, Easy to clean"
                   value={benefits}
                   onChange={(e) => setBenefits(e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors resize-y"
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-colors resize-y"
                 />
                 <p className="text-xs text-gray-400 mt-1">
                   We&apos;ll fill anything you leave blank from the photo.
@@ -193,7 +193,7 @@ function MarketplaceSelector({
               onClick={() => onChange(opt.id)}
               className={`text-left border rounded-xl px-3.5 py-2.5 transition-all ${
                 active
-                  ? 'border-indigo-400 bg-indigo-50/50 ring-2 ring-indigo-500/20'
+                  ? 'border-brand-400 bg-brand-50/50 ring-2 ring-brand-500/20'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
@@ -223,7 +223,7 @@ function ListingPackSubmit({
     <button
       type="submit"
       disabled={disabled}
-      className="w-full py-3 px-6 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+      className="w-full py-3 px-6 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
     >
       {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
       {submitting

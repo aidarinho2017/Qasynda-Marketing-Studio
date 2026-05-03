@@ -64,8 +64,8 @@ export default function ChatPane({
     return (
       <div className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-2xl text-center">
-          <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-indigo-50 flex items-center justify-center">
-            <Compass className="w-7 h-7 text-indigo-600" />
+          <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-brand-50 flex items-center justify-center">
+            <Compass className="w-7 h-7 text-brand-600" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
             What are you building?
@@ -124,8 +124,8 @@ export default function ChatPane({
 function ThinkingBubble() {
   return (
     <div className="flex gap-3">
-      <div className="shrink-0 w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center animate-pulse">
-        <Compass className="w-4 h-4 text-indigo-600" />
+      <div className="shrink-0 w-8 h-8 rounded-full bg-brand-50 flex items-center justify-center animate-pulse">
+        <Compass className="w-4 h-4 text-brand-600" />
       </div>
       <div className="inline-flex items-center gap-1 pt-2.5">
         <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce [animation-delay:-0.3s]" />
@@ -162,7 +162,7 @@ function Composer({
   }, [draft]);
 
   return (
-    <div className="flex items-end gap-2 bg-white border border-gray-200 rounded-2xl shadow-sm focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500/20 px-3 py-2">
+    <div className="flex items-end gap-2 bg-white border border-gray-200 rounded-2xl shadow-sm focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-500/20 px-3 py-2">
       <textarea
         ref={textareaRef}
         value={draft}
@@ -180,7 +180,7 @@ function Composer({
       <button
         onClick={submit}
         disabled={disabled}
-        className="shrink-0 w-8 h-8 flex items-center justify-center bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        className="shrink-0 w-8 h-8 flex items-center justify-center bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         aria-label="Send"
       >
         {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-3.5 h-3.5" />}

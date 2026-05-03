@@ -13,7 +13,7 @@ from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/google")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
@@ -47,7 +47,15 @@ async def get_current_user(
         logger.warning("JWT decode failed or sub is not a valid UUID")
         raise credentials_exc
 
-    result = await db.execute(select(User).where(User.id == user_id))
+    try:
+        result = await db.execute(select(User).where(User.id == user_id))
+    except Exception as exc:
+        logger.error("DB error in get_current_user: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database temporarily unavailable, please retry",
+        ) from exc
+
     user = result.scalar_one_or_none()
     if user is None:
         logger.warning("Authenticated user %s not found in DB", user_id)

@@ -58,8 +58,8 @@ export default function AssistantMessage({ message, showActions, animate, onActi
 
   return (
     <div className="flex gap-3">
-      <div className="shrink-0 w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center">
-        <Compass className="w-4 h-4 text-indigo-600" />
+      <div className="shrink-0 w-8 h-8 rounded-full bg-brand-50 flex items-center justify-center">
+        <Compass className="w-4 h-4 text-brand-600" />
       </div>
       <div className="flex-1 min-w-0 space-y-3">
         <div className="text-sm text-gray-900 leading-relaxed whitespace-pre-wrap">
@@ -82,7 +82,7 @@ export default function AssistantMessage({ message, showActions, animate, onActi
                 key={i}
                 type="button"
                 onClick={() => onAction(a)}
-                className="text-xs font-medium px-3 py-1.5 rounded-full bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 transition-colors"
+                className="text-xs font-medium px-3 py-1.5 rounded-full bg-white border border-brand-200 text-brand-700 hover:bg-brand-50 transition-colors"
               >
                 {a.label}
               </button>

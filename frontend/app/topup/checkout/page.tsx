@@ -233,9 +233,9 @@ function CheckoutContent() {
             </Section>
 
             <Section title="Payment method">
-              <div className="flex items-center gap-2 px-4 py-3 bg-indigo-50 border border-indigo-100 rounded-xl mb-4">
-                <CreditCard className="w-4 h-4 text-indigo-600" />
-                <span className="text-sm font-medium text-indigo-700">Card</span>
+              <div className="flex items-center gap-2 px-4 py-3 bg-brand-50 border border-brand-100 rounded-xl mb-4">
+                <CreditCard className="w-4 h-4 text-brand-600" />
+                <span className="text-sm font-medium text-brand-700">Card</span>
               </div>
 
               <Field label="Card number">
@@ -298,7 +298,7 @@ function CheckoutContent() {
                   <select
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors"
+                    className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-colors"
                   >
                     <option value="KZ">Kazakhstan</option>
                     <option value="RU">Russia</option>
@@ -330,7 +330,7 @@ function CheckoutContent() {
             <button
               type="submit"
               disabled={!valid || phase === 'processing'}
-              className="w-full py-3.5 px-6 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 shadow-sm"
+              className="w-full py-3.5 px-6 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 shadow-sm"
             >
               {phase === 'processing' ? (
                 <>
@@ -391,7 +391,7 @@ function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors"
+      className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-colors"
     />
   );
 }
@@ -403,7 +403,7 @@ export default function CheckoutPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+          <Loader2 className="w-6 h-6 text-brand-400 animate-spin" />
         </div>
       }
     >

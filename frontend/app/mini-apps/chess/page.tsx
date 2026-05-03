@@ -81,8 +81,8 @@ export default function ChessPage() {
         </button>
 
         <div className="mb-8 flex items-start gap-3">
-          <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center shrink-0">
-            <Crown className="w-5 h-5 text-indigo-600" />
+          <div className="w-10 h-10 bg-brand-50 rounded-xl flex items-center justify-center shrink-0">
+            <Crown className="w-5 h-5 text-brand-600" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Chess</h1>
@@ -117,7 +117,7 @@ export default function ChessPage() {
                   placeholder="E.g. 'make it dark walnut wood', 'give it a crown', 'marble style'."
                   value={wishes}
                   onChange={(e) => setWishes(e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors resize-y"
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-colors resize-y"
                 />
               </div>
 
@@ -174,8 +174,8 @@ function PiecePicker({
             onClick={() => onChange(p.value)}
             className={`flex flex-col items-center gap-1 px-3 py-3 rounded-xl border text-sm font-medium transition-all ${
               value === p.value
-                ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                : 'border-gray-200 bg-white text-gray-600 hover:border-indigo-300 hover:bg-indigo-50/50'
+                ? 'border-brand-500 bg-brand-50 text-brand-700'
+                : 'border-gray-200 bg-white text-gray-600 hover:border-brand-300 hover:bg-brand-50/50'
             }`}
           >
             <span className="text-2xl leading-none">{p.emoji}</span>
@@ -204,7 +204,7 @@ function ChessSubmit({
     <button
       type="submit"
       disabled={disabled}
-      className="w-full py-3 px-6 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+      className="w-full py-3 px-6 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
     >
       {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
       {submitting

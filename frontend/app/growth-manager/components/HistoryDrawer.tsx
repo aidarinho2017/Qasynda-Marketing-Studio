@@ -66,7 +66,7 @@ export default function HistoryDrawer({
               onCreate();
               onClose();
             }}
-            className="w-full flex items-center justify-center gap-1.5 py-2 px-3 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-colors"
+            className="w-full flex items-center justify-center gap-1.5 py-2 px-3 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
             New conversation
@@ -88,7 +88,7 @@ export default function HistoryDrawer({
               <div
                 key={c.id}
                 className={`group flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors ${
-                  active ? 'bg-indigo-50' : 'hover:bg-gray-50'
+                  active ? 'bg-brand-50' : 'hover:bg-gray-50'
                 }`}
                 onClick={() => {
                   onSelect(c.id);
@@ -98,7 +98,7 @@ export default function HistoryDrawer({
                 <div className="flex-1 min-w-0">
                   <p
                     className={`text-sm truncate ${
-                      active ? 'font-semibold text-indigo-700' : 'text-gray-900'
+                      active ? 'font-semibold text-brand-700' : 'text-gray-900'
                     }`}
                   >
                     {c.title}

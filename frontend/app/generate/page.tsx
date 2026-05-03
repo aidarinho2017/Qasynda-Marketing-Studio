@@ -37,7 +37,7 @@ function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
     <textarea
       rows={4}
       {...props}
-      className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors resize-y"
+      className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-colors resize-y"
     />
   );
 }
@@ -46,7 +46,7 @@ function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select
       {...props}
-      className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 bg-white transition-colors appearance-none"
+      className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 bg-white transition-colors appearance-none"
     />
   );
 }
@@ -75,7 +75,7 @@ function Slider({
     <div>
       <div className="flex items-center justify-between mb-1">
         <Label>Creativity</Label>
-        <span className="text-sm font-semibold text-indigo-600 tabular-nums">{value}/10</span>
+        <span className="text-sm font-semibold text-brand-600 tabular-nums">{value}/10</span>
       </div>
       <input
         type="range"
@@ -83,7 +83,7 @@ function Slider({
         max={max}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-indigo-600 cursor-pointer"
+        className="w-full accent-brand-600 cursor-pointer"
       />
       <div className="flex justify-between text-xs text-gray-400 mt-1">
         <span>Faithful</span>
@@ -126,7 +126,7 @@ function SubmitButton({
     <button
       type="submit"
       disabled={disabled}
-      className="w-full py-3 px-6 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+      className="w-full py-3 px-6 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
     >
       {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
       {label}
@@ -152,8 +152,8 @@ function CountPicker({ value, onChange }: { value: number; onChange: (n: number)
               className={[
                 'flex flex-col items-center gap-0.5 py-2 px-1 rounded-xl border transition-colors',
                 selected
-                  ? 'bg-indigo-600 text-white border-indigo-600'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:text-indigo-600',
+                  ? 'bg-brand-600 text-white border-brand-600'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-brand-300 hover:text-brand-600',
               ].join(' ')}
             >
               <span className="text-base font-semibold leading-none">{n}</span>
@@ -539,9 +539,9 @@ function EnhanceForm({
         <UploadForm onFile={onFile} currentFile={file} />
       </div>
 
-      <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 text-sm text-indigo-900 leading-relaxed">
+      <div className="bg-brand-50 border border-brand-100 rounded-xl px-4 py-3 text-sm text-brand-900 leading-relaxed">
         We&apos;ll automatically:
-        <ul className="mt-1.5 ml-1 space-y-0.5 text-indigo-800">
+        <ul className="mt-1.5 ml-1 space-y-0.5 text-brand-800">
           <li>· remove the background</li>
           <li>· fix the lighting</li>
           <li>· sharpen the details</li>
@@ -649,7 +649,7 @@ function GenerateContent() {
                 className={[
                   'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
                   mode === 'marketplace'
-                    ? 'bg-indigo-600 text-white shadow-sm'
+                    ? 'bg-brand-600 text-white shadow-sm'
                     : 'text-gray-500 hover:text-gray-700',
                 ].join(' ')}
               >
@@ -662,7 +662,7 @@ function GenerateContent() {
                 className={[
                   'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
                   mode === 'ugc'
-                    ? 'bg-indigo-600 text-white shadow-sm'
+                    ? 'bg-brand-600 text-white shadow-sm'
                     : 'text-gray-500 hover:text-gray-700',
                 ].join(' ')}
               >
@@ -675,7 +675,7 @@ function GenerateContent() {
                 className={[
                   'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
                   mode === 'enhance'
-                    ? 'bg-indigo-600 text-white shadow-sm'
+                    ? 'bg-brand-600 text-white shadow-sm'
                     : 'text-gray-500 hover:text-gray-700',
                 ].join(' ')}
               >
@@ -741,7 +741,7 @@ export default function GeneratePage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <Loader2 className="w-6 h-6 text-indigo-400 animate-spin" />
+          <Loader2 className="w-6 h-6 text-brand-400 animate-spin" />
         </div>
       }
     >
