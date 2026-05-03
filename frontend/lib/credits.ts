@@ -65,6 +65,27 @@ export async function topupCredits(packId: string): Promise<TopupResponse> {
   return res;
 }
 
+// ─── Insufficient-credits global event ───────────────────────────────────────
+
+const INSUFFICIENT_EVENT = 'qasynda:insufficient-credits';
+
+export function triggerInsufficientCredits(message?: string): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(INSUFFICIENT_EVENT, { detail: message }));
+}
+
+export function onInsufficientCredits(
+  handler: (message?: string) => void,
+): () => void {
+  if (typeof window === 'undefined') return () => {};
+  const listener = (e: Event) => {
+    const msg = (e as CustomEvent<string | undefined>).detail;
+    handler(msg);
+  };
+  window.addEventListener(INSUFFICIENT_EVENT, listener);
+  return () => window.removeEventListener(INSUFFICIENT_EVENT, listener);
+}
+
 export function useCredits(): {
   balance: number | null;
   refresh: () => Promise<number | null>;

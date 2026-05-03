@@ -497,7 +497,7 @@ function Pricing({ onClick }: { onClick: () => void }) {
         </div>
 
         <p className="mt-6 text-xs text-gray-400 text-center">
-          New accounts get 5 free credits — try it before you buy anything.
+          Pay-as-you-go — buy credits whenever you need them, no subscription.
         </p>
       </div>
     </section>

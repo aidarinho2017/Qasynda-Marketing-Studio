@@ -11,7 +11,7 @@ Decimal arithmetic with int works cleanly; with float it doesn't.
 from decimal import Decimal
 
 CREDITS_PER_IMAGE: int = 5
-SIGNUP_CREDITS_GRANT: int = 5
+SIGNUP_CREDITS_GRANT: int = 0
 
 # Flat cost for the listing-pack pipeline (5–7 typed images + LLM analysis).
 LISTING_PACK_CREDITS: int = 25

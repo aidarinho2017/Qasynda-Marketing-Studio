@@ -22,6 +22,7 @@ import {
   bundlePriceForCount,
   fullPriceForCount,
   refreshCredits,
+  triggerInsufficientCredits,
   useCredits,
 } from '@/lib/credits';
 import type { GenerationStartResponse } from '@/lib/types';
@@ -106,30 +107,38 @@ function SubmitButton({
   const { balance } = useCredits();
   const cost = bundlePriceForCount(count);
   const insufficient = balance !== null && balance < cost;
-  const disabled = submitting || fileMissing || insufficient;
 
-  let label: React.ReactNode;
-  if (submitting) {
-    label = 'Generating…';
-  } else if (insufficient) {
-    label = `Need ${cost} credits — top up`;
-  } else {
-    label = (
-      <>
-        Generate {count} image{count !== 1 ? 's' : ''}
-        <span className="opacity-80 font-normal">· {cost} credits</span>
-      </>
+  if (insufficient) {
+    return (
+      <button
+        type="button"
+        onClick={() =>
+          triggerInsufficientCredits(
+            `Need ${cost} credits to generate, you have ${balance}.`,
+          )
+        }
+        className="w-full py-3 px-6 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-700 transition-colors flex items-center justify-center gap-2"
+      >
+        Need {cost} credits — top up
+      </button>
     );
   }
 
   return (
     <button
       type="submit"
-      disabled={disabled}
+      disabled={submitting || fileMissing}
       className="w-full py-3 px-6 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
     >
       {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-      {label}
+      {submitting ? (
+        'Generating…'
+      ) : (
+        <>
+          Generate {count} image{count !== 1 ? 's' : ''}
+          <span className="opacity-80 font-normal">· {cost} credits</span>
+        </>
+      )}
     </button>
   );
 }

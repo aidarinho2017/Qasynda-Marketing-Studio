@@ -2,7 +2,11 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Loader2, Send, Compass } from 'lucide-react';
-import { GROWTH_TURN_CREDITS, useCredits } from '@/lib/credits';
+import {
+  GROWTH_TURN_CREDITS,
+  triggerInsufficientCredits,
+  useCredits,
+} from '@/lib/credits';
 import AssistantMessage from './AssistantMessage';
 import UserMessage from './UserMessage';
 import type { CoachMessage, CoachModule, NextAction } from '../lib/coachTypes';
@@ -151,7 +155,7 @@ function Composer({
 }) {
   const { balance } = useCredits();
   const insufficient = balance !== null && balance < GROWTH_TURN_CREDITS;
-  const disabled = sending || !draft.trim() || insufficient;
+  const disabled = sending || (!insufficient && !draft.trim());
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useLayoutEffect(() => {
@@ -160,6 +164,16 @@ function Composer({
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
   }, [draft]);
+
+  const handleSendClick = () => {
+    if (insufficient) {
+      triggerInsufficientCredits(
+        `Need ${GROWTH_TURN_CREDITS} credits per message, you have ${balance}.`,
+      );
+      return;
+    }
+    submit();
+  };
 
   return (
     <div className="flex items-end gap-2 bg-white border border-gray-200 rounded-2xl shadow-sm focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-500/20 px-3 py-2">
@@ -178,7 +192,7 @@ function Composer({
         style={{ minHeight: '24px', maxHeight: '14rem' }}
       />
       <button
-        onClick={submit}
+        onClick={handleSendClick}
         disabled={disabled}
         className="shrink-0 w-8 h-8 flex items-center justify-center bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         aria-label="Send"

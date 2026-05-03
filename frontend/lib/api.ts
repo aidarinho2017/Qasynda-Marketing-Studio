@@ -53,6 +53,17 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     return undefined as T;
   }
 
+  if (res.status === 402) {
+    const err = await res.json().catch(() => ({ detail: 'Insufficient credits.' }));
+    const detail: string = err.detail ?? 'Insufficient credits.';
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('qasynda:insufficient-credits', { detail }),
+      );
+    }
+    throw new Error(detail);
+  }
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: 'Request failed' }));
     throw new Error(err.detail ?? 'Request failed');
