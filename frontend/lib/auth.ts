@@ -4,6 +4,7 @@ const USER_KEY = 'qasynda_user';
 export interface StoredUser {
   name: string;
   avatar: string | null;
+  is_admin?: boolean;
 }
 
 export function getToken(): string | null {
@@ -32,6 +33,10 @@ export function setUser(user: StoredUser): void {
 
 export function isAuthenticated(): boolean {
   return !!getToken();
+}
+
+export function isAdmin(): boolean {
+  return getUser()?.is_admin === true;
 }
 
 export function logout(): void {

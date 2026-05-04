@@ -7,6 +7,7 @@ import {
   triggerInsufficientCredits,
   useCredits,
 } from '@/lib/credits';
+import { useT, interpolate } from '@/lib/i18n';
 import AssistantMessage from './AssistantMessage';
 import UserMessage from './UserMessage';
 import type { CoachMessage, CoachModule, NextAction } from '../lib/coachTypes';
@@ -64,6 +65,8 @@ export default function ChatPane({
     void onSend(a.prompt, a.module);
   };
 
+  const { t } = useT();
+
   if (isEmpty) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center px-4">
@@ -72,10 +75,10 @@ export default function ChatPane({
             <Compass className="w-7 h-7 text-brand-600" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-            What are you building?
+            {t.growthManager.whatAreYouBuilding}
           </h1>
           <p className="text-sm text-gray-500 mb-8">
-            Describe your product or idea and I’ll help you build your growth engine.
+            {t.growthManager.buildingSubtitle}
           </p>
           <Composer
             draft={draft}
@@ -153,6 +156,7 @@ function Composer({
   sending: boolean;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }) {
+  const { t } = useT();
   const { balance } = useCredits();
   const insufficient = balance !== null && balance < GROWTH_TURN_CREDITS;
   const disabled = sending || (!insufficient && !draft.trim());
@@ -168,7 +172,7 @@ function Composer({
   const handleSendClick = () => {
     if (insufficient) {
       triggerInsufficientCredits(
-        `Need ${GROWTH_TURN_CREDITS} credits per message, you have ${balance}.`,
+        interpolate(t.growthManager.needCredits, { cost: GROWTH_TURN_CREDITS }),
       );
       return;
     }
@@ -184,8 +188,8 @@ function Composer({
         onKeyDown={onKeyDown}
         placeholder={
           insufficient
-            ? `Need ${GROWTH_TURN_CREDITS} credits — top up to chat`
-            : 'Ask anything…'
+            ? interpolate(t.growthManager.needCredits, { cost: GROWTH_TURN_CREDITS })
+            : t.growthManager.askAnything
         }
         className="flex-1 resize-none bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none py-1.5 overflow-y-auto"
         disabled={sending}

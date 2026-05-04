@@ -46,8 +46,13 @@ class Generation(TimestampMixin, Base):
     prompt_used: Mapped[str | None] = mapped_column(Text, nullable=True)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     content_plan: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    catalogue_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("catalogues.id", ondelete="SET NULL"),
+        nullable=True,
+    )
 
     __table_args__ = (
         Index("ix_generations_user_id", "user_id"),
         Index("ix_generations_status", "status"),
+        Index("ix_generations_catalogue_id", "catalogue_id"),
     )

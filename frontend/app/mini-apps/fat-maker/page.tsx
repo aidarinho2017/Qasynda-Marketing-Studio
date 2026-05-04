@@ -16,9 +16,11 @@ import {
   triggerInsufficientCredits,
   useCredits,
 } from '@/lib/credits';
+import { useT, interpolate } from '@/lib/i18n';
 import type { GenerationStartResponse } from '@/lib/types';
 
 export default function FatMakerPage() {
+  const { t } = useT();
   const router = useRouter();
   const galleryRef = useRef<GenerationsGalleryHandle>(null);
 
@@ -35,7 +37,7 @@ export default function FatMakerPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
-      alert('Please upload a photo.');
+      alert(t.fatMaker.alertUpload);
       return;
     }
     setSubmitting(true);
@@ -52,7 +54,7 @@ export default function FatMakerPage() {
       setFile(null);
       await Promise.all([galleryRef.current?.refetch(), refreshCredits()]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Generation failed.');
+      setError(err instanceof Error ? err.message : t.fatMaker.generating);
     } finally {
       setSubmitting(false);
     }
@@ -68,7 +70,7 @@ export default function FatMakerPage() {
           className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-4 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          All mini apps
+          {t.fatMaker.backToMiniApps}
         </button>
 
         <div className="mb-8 flex items-start gap-3">
@@ -76,9 +78,9 @@ export default function FatMakerPage() {
             <Smile className="w-5 h-5 text-brand-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Fat Maker</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t.fatMaker.title}</h1>
             <p className="text-sm text-gray-500 mt-0.5">
-              Upload a photo of your friend and watch them get rounder. Just for laughs.
+              {t.fatMaker.subtitle}
             </p>
           </div>
         </div>
@@ -92,18 +94,18 @@ export default function FatMakerPage() {
             >
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Friend&apos;s photo
+                  {t.fatMaker.friendPhoto}
                 </label>
                 <UploadForm onFile={setFile} currentFile={file} />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tell us your wishes (optional)
+                  {t.fatMaker.wishes}
                 </label>
                 <textarea
                   rows={3}
-                  placeholder="E.g. 'add a double chin', 'make him look like a sumo wrestler', 'keep it subtle'."
+                  placeholder={t.fatMaker.wishesPH}
                   value={wishes}
                   onChange={(e) => setWishes(e.target.value)}
                   className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-colors resize-y"
@@ -122,16 +124,16 @@ export default function FatMakerPage() {
             </form>
 
             <p className="text-xs text-gray-400 mt-3 text-center">
-              Be kind — only upload photos of friends who are in on the joke.
+              {t.fatMaker.kindnessNote}
             </p>
           </div>
 
           {/* Right pane: generations */}
           <div>
             <div className="mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Your generations</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t.fatMaker.yourGenerations}</h2>
               <p className="text-xs text-gray-500 mt-0.5">
-                New generations appear here as they process.
+                {t.fatMaker.generationsSubtitle}
               </p>
             </div>
             <GenerationsGallery
@@ -152,14 +154,15 @@ function FatnessSlider({
   value: number;
   onChange: (n: number) => void;
 }) {
+  const { t } = useT();
   const labelFor = (n: number) =>
-    n <= 3 ? 'Subtle' : n <= 7 ? 'Noticeable' : 'Cartoonish';
+    n <= 3 ? t.fatMaker.subtle : n <= 7 ? t.fatMaker.noticeable : t.fatMaker.cartoonish;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
         <label className="block text-sm font-medium text-gray-700">
-          Fatness scale
+          {t.fatMaker.fatnessScale}
         </label>
         <span className="text-sm font-semibold text-brand-600 tabular-nums">
           {value}/10 · {labelFor(value)}
@@ -174,9 +177,9 @@ function FatnessSlider({
         className="w-full accent-brand-600 cursor-pointer"
       />
       <div className="flex justify-between text-xs text-gray-400 mt-1">
-        <span>Subtle</span>
-        <span>Noticeable</span>
-        <span>Cartoonish</span>
+        <span>{t.fatMaker.subtle}</span>
+        <span>{t.fatMaker.noticeable}</span>
+        <span>{t.fatMaker.cartoonish}</span>
       </div>
     </div>
   );
@@ -189,6 +192,7 @@ function FatMakerSubmit({
   submitting: boolean;
   fileMissing: boolean;
 }) {
+  const { t } = useT();
   const { balance } = useCredits();
   const cost = bundlePriceForCount(1);
   const insufficient = balance !== null && balance < cost;
@@ -199,12 +203,12 @@ function FatMakerSubmit({
         type="button"
         onClick={() =>
           triggerInsufficientCredits(
-            `Need ${cost} credits to fatten an image, you have ${balance}.`,
+            interpolate(t.fatMaker.needCredits, { cost }),
           )
         }
         className="w-full py-3 px-6 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-700 transition-colors flex items-center justify-center gap-2"
       >
-        Need {cost} credits — top up
+        {interpolate(t.fatMaker.needCredits, { cost })}
       </button>
     );
   }
@@ -217,11 +221,11 @@ function FatMakerSubmit({
     >
       {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
       {submitting
-        ? 'Generating…'
+        ? t.fatMaker.generating
         : (
           <>
-            Make them fat
-            <span className="opacity-80 font-normal">· {cost} credits</span>
+            {t.fatMaker.makeFat}
+            <span className="opacity-80 font-normal">{interpolate(t.fatMaker.costSuffix, { cost })}</span>
           </>
         )}
     </button>

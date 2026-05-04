@@ -11,6 +11,8 @@ from app.api.routes.users import router as users_router
 from app.api.routes.generation import generate_router, generations_router
 from app.api.routes.coach import router as coach_router
 from app.api.routes.leads import leads_router
+from app.api.routes.catalogue import catalogue_router
+from app.api.routes.admin import admin_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -54,6 +56,8 @@ app.include_router(generate_router, prefix="/generate", tags=["generate"])
 app.include_router(generations_router, prefix="/generations", tags=["generations"])
 app.include_router(coach_router, prefix="/growth", tags=["growth"])
 app.include_router(leads_router, prefix="/leads", tags=["leads"])
+app.include_router(catalogue_router, prefix="/catalogue", tags=["catalogue"])
+app.include_router(admin_router, prefix="/admin", tags=["admin"])
 
 
 @app.get("/health", tags=["health"])

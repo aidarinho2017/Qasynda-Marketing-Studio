@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Trash2, Loader2, AlertCircle, ImageOff, Download } from 'lucide-react';
 import type { Generation } from '@/lib/types';
 import { imageUrlOf } from '@/lib/types';
+import { useT } from '@/lib/i18n';
 
 interface GenerationCardProps {
   generation: Generation;
@@ -17,14 +18,14 @@ const STATUS_STYLES: Record<Generation['status'], string> = {
   failed:     'bg-red-50 text-red-700 border-red-200',
 };
 
-const STATUS_LABELS: Record<Generation['status'], string> = {
-  pending:    'Pending',
-  processing: 'Processing…',
-  completed:  'Completed',
-  failed:     'Failed',
-};
-
 function StatusBadge({ status }: { status: Generation['status'] }) {
+  const { t } = useT();
+  const STATUS_LABELS: Record<Generation['status'], string> = {
+    pending:    t.generationCard.pending,
+    processing: t.generationCard.processing,
+    completed:  t.generationCard.completed,
+    failed:     t.generationCard.failed,
+  };
   return (
     <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full border ${STATUS_STYLES[status]}`}>
       {(status === 'pending' || status === 'processing') && (
@@ -37,10 +38,11 @@ function StatusBadge({ status }: { status: Generation['status'] }) {
 }
 
 export default function GenerationCard({ generation, onDelete }: GenerationCardProps) {
+  const { t, locale } = useT();
   const [deleting, setDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm('Delete this generation and all its images?')) return;
+    if (!confirm(t.generationCard.confirmDelete)) return;
     setDeleting(true);
     try {
       await onDelete(generation.id);
@@ -50,29 +52,26 @@ export default function GenerationCard({ generation, onDelete }: GenerationCardP
   };
 
   const MINI_APP_LABELS: Record<string, string> = {
-    fat_maker: 'Fat Maker',
-    chess: 'Chess',
+    fat_maker: t.generationCard.fatMaker,
+    chess: t.generationCard.chess,
   };
 
   const typeLabel = (() => {
     switch (generation.type) {
-      case 'marketplace':
-        return 'Marketplace';
-      case 'ugc':
-        return 'UGC';
-      case 'enhance':
-        return 'Enhance';
-      case 'listing_pack':
-        return 'Listing Pack';
+      case 'marketplace': return t.generationCard.marketplace;
+      case 'ugc':         return t.generationCard.ugc;
+      case 'enhance':     return t.generationCard.enhance;
+      case 'listing_pack': return t.generationCard.listingPack;
       case 'mini_app': {
         const appId = (generation.input_data as { app_id?: string } | null)?.app_id;
-        return appId ? MINI_APP_LABELS[appId] ?? 'Mini App' : 'Mini App';
+        return appId ? MINI_APP_LABELS[appId] ?? t.generationCard.miniApp : t.generationCard.miniApp;
       }
-      default:
-        return '';
+      default: return '';
     }
   })();
-  const date = new Date(generation.created_at).toLocaleDateString('en-US', {
+
+  const dateLocale = locale === 'ru' ? 'ru-RU' : 'en-US';
+  const date = new Date(generation.created_at).toLocaleDateString(dateLocale, {
     month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
   });
 
@@ -97,12 +96,12 @@ export default function GenerationCard({ generation, onDelete }: GenerationCardP
             {generation.status === 'pending' || generation.status === 'processing' ? (
               <>
                 <Loader2 className="w-8 h-8 animate-spin text-brand-300" />
-                <span className="text-xs text-gray-400">Generating…</span>
+                <span className="text-xs text-gray-400">{t.generationCard.generating}</span>
               </>
             ) : (
               <>
                 <ImageOff className="w-8 h-8" />
-                <span className="text-xs">No images</span>
+                <span className="text-xs">{t.generationCard.noImages}</span>
               </>
             )}
           </div>
@@ -136,7 +135,7 @@ export default function GenerationCard({ generation, onDelete }: GenerationCardP
               className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-800 font-medium"
             >
               <Download className="w-3.5 h-3.5" />
-              Download
+              {t.generationCard.download}
             </a>
           )}
           <button
@@ -149,7 +148,7 @@ export default function GenerationCard({ generation, onDelete }: GenerationCardP
             ) : (
               <Trash2 className="w-3.5 h-3.5" />
             )}
-            Delete
+            {t.generationCard.delete}
           </button>
         </div>
       </div>

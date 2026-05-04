@@ -6,6 +6,7 @@ import { Menu, Plus } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { isAuthenticated } from '@/lib/auth';
 import { setCreditsBalance } from '@/lib/credits';
+import { useT } from '@/lib/i18n';
 import ChatPane from './components/ChatPane';
 import HistoryDrawer from './components/HistoryDrawer';
 import { coachApi } from './lib/coachApi';
@@ -17,6 +18,7 @@ import type {
 } from './lib/coachTypes';
 
 export default function GrowthManagerPage() {
+  const { t } = useT();
   const router = useRouter();
 
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
@@ -40,7 +42,7 @@ export default function GrowthManagerPage() {
       setConversations(res.items);
       return res.items;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load conversations.');
+      setError(err instanceof Error ? err.message : t.growthManager.couldNotReply);
       return [];
     } finally {
       setLoadingList(false);
@@ -69,7 +71,7 @@ export default function GrowthManagerPage() {
         setActiveConvo(c);
         setModule(c.current_module);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load conversation.');
+        setError(err instanceof Error ? err.message : t.growthManager.couldNotReply);
       }
     })();
   }, [selectedId]);
@@ -91,7 +93,7 @@ export default function GrowthManagerPage() {
         setActiveConvo(null);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not delete conversation.');
+      setError(err instanceof Error ? err.message : t.growthManager.couldNotReply);
     }
   };
 
@@ -118,7 +120,7 @@ export default function GrowthManagerPage() {
         setSelectedId(c.id);
         setActiveConvo(c);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Could not start conversation.');
+        setError(err instanceof Error ? err.message : t.growthManager.couldNotReply);
         return;
       }
     }
@@ -178,7 +180,7 @@ export default function GrowthManagerPage() {
           ? { ...prev, messages: prev.messages.filter((m) => m.id !== optimisticUser.id) }
           : prev,
       );
-      setError(err instanceof Error ? err.message : 'The coach could not reply. Try again.');
+      setError(err instanceof Error ? err.message : t.growthManager.couldNotReply);
     } finally {
       setSending(false);
     }
@@ -207,7 +209,7 @@ export default function GrowthManagerPage() {
             <button
               onClick={() => setDrawerOpen(true)}
               className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-              aria-label="Open history"
+              aria-label={t.growthManager.openHistory}
             >
               <Menu className="w-4 h-4" />
             </button>
@@ -216,7 +218,7 @@ export default function GrowthManagerPage() {
               className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-700 hover:text-gray-900 px-2.5 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
             >
               <Plus className="w-3.5 h-3.5" />
-              New
+              {t.growthManager.newConversation}
             </button>
           </div>
         </div>

@@ -16,11 +16,13 @@ import {
   triggerInsufficientCredits,
   useCredits,
 } from '@/lib/credits';
+import { useT, interpolate } from '@/lib/i18n';
 import type { GenerationStartResponse } from '@/lib/types';
 
 type Marketplace = 'kaspi' | 'wildberries';
 
 export default function ListingPackPage() {
+  const { t } = useT();
   const router = useRouter();
   const galleryRef = useRef<GenerationsGalleryHandle>(null);
 
@@ -38,7 +40,7 @@ export default function ListingPackPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
-      alert('Please upload a product photo.');
+      alert(t.listingPack.alertUpload);
       return;
     }
     setSubmitting(true);
@@ -57,7 +59,7 @@ export default function ListingPackPage() {
       setBenefits('');
       await Promise.all([galleryRef.current?.refetch(), refreshCredits()]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Generation failed.');
+      setError(err instanceof Error ? err.message : t.listingPack.generating);
     } finally {
       setSubmitting(false);
     }
@@ -73,7 +75,7 @@ export default function ListingPackPage() {
           className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-4 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Dashboard
+          {t.listingPack.backToDashboard}
         </button>
 
         <div className="mb-8 flex items-start gap-3">
@@ -81,10 +83,9 @@ export default function ListingPackPage() {
             <Package className="w-5 h-5 text-brand-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Product Listing Pack</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t.listingPack.title}</h1>
             <p className="text-sm text-gray-500 mt-0.5">
-              Upload one product photo. Get a full 5–7-slide marketplace listing —
-              hero, benefits, use case, details, and a closing slide.
+              {t.listingPack.subtitle}
             </p>
           </div>
         </div>
@@ -98,41 +99,41 @@ export default function ListingPackPage() {
             >
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Product photo
+                  {t.listingPack.productPhoto}
                 </label>
                 <UploadForm onFile={setFile} currentFile={file} />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Title (optional)
+                  {t.listingPack.titleLabel}
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Portable Blender"
+                  placeholder={t.listingPack.titlePH}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   maxLength={80}
                   className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-colors"
                 />
                 <p className="text-xs text-gray-400 mt-1">
-                  Leave empty and AI will name the product for you.
+                  {t.listingPack.titleHint}
                 </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Benefits (optional, comma-separated)
+                  {t.listingPack.benefitsLabel}
                 </label>
                 <textarea
                   rows={3}
-                  placeholder="e.g. Powerful motor, Compact size, Easy to clean"
+                  placeholder={t.listingPack.benefitsPH}
                   value={benefits}
                   onChange={(e) => setBenefits(e.target.value)}
                   className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-colors resize-y"
                 />
                 <p className="text-xs text-gray-400 mt-1">
-                  We&apos;ll fill anything you leave blank from the photo.
+                  {t.listingPack.benefitsHint}
                 </p>
               </div>
 
@@ -148,17 +149,16 @@ export default function ListingPackPage() {
             </form>
 
             <p className="text-xs text-gray-400 mt-3 text-center leading-relaxed">
-              The pack includes 1 hero, 2–3 benefit slides, 1 use case, 1 details, 1 final.
-              Generation typically takes 30–60 seconds.
+              {t.listingPack.packNote}
             </p>
           </div>
 
           {/* Right pane: generations */}
           <div>
             <div className="mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Your generations</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t.listingPack.yourGenerations}</h2>
               <p className="text-xs text-gray-500 mt-0.5">
-                New listing packs appear here as they process.
+                {t.listingPack.generationsSubtitle}
               </p>
             </div>
             <GenerationsGallery
@@ -179,14 +179,15 @@ function MarketplaceSelector({
   value: Marketplace;
   onChange: (v: Marketplace) => void;
 }) {
+  const { t } = useT();
   const options: { id: Marketplace; label: string; hint: string }[] = [
-    { id: 'kaspi', label: 'Kaspi', hint: 'Minimal, clean' },
-    { id: 'wildberries', label: 'Wildberries', hint: 'Bold, infographic' },
+    { id: 'kaspi', label: 'Kaspi', hint: t.listingPack.kaspiHint },
+    { id: 'wildberries', label: 'Wildberries', hint: t.listingPack.wildberriesHint },
   ];
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">
-        Marketplace style
+        {t.listingPack.marketplaceStyle}
       </label>
       <div className="grid grid-cols-2 gap-2">
         {options.map((opt) => {
@@ -219,6 +220,7 @@ function ListingPackSubmit({
   submitting: boolean;
   fileMissing: boolean;
 }) {
+  const { t } = useT();
   const { balance } = useCredits();
   const cost = LISTING_PACK_CREDITS;
   const insufficient = balance !== null && balance < cost;
@@ -228,13 +230,11 @@ function ListingPackSubmit({
       <button
         type="button"
         onClick={() =>
-          triggerInsufficientCredits(
-            `Need ${cost} credits to generate a listing pack, you have ${balance}.`,
-          )
+          triggerInsufficientCredits(interpolate(t.listingPack.needCredits, { cost }))
         }
         className="w-full py-3 px-6 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-700 transition-colors flex items-center justify-center gap-2"
       >
-        Need {cost} credits — top up
+        {interpolate(t.listingPack.needCredits, { cost })}
       </button>
     );
   }
@@ -247,11 +247,11 @@ function ListingPackSubmit({
     >
       {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
       {submitting
-        ? 'Generating…'
+        ? t.listingPack.generating
         : (
           <>
-            Generate listing pack
-            <span className="opacity-80 font-normal">· {cost} credits</span>
+            {t.listingPack.generatePack}
+            <span className="opacity-80 font-normal">{interpolate(t.listingPack.costSuffix, { cost })}</span>
           </>
         )}
     </button>

@@ -6,8 +6,10 @@ import { ArrowLeft, ArrowRight, Coins } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { isAuthenticated } from '@/lib/auth';
 import { CREDITS_PER_IMAGE, TOPUP_PACKS, useCredits } from '@/lib/credits';
+import { useT } from '@/lib/i18n';
 
 export default function TopupPage() {
+  const { t } = useT();
   const router = useRouter();
   const { balance } = useCredits();
 
@@ -29,25 +31,25 @@ export default function TopupPage() {
           className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back
+          {t.topup.back}
         </button>
 
         <div className="mb-2 flex items-center gap-2">
           <Coins className="w-5 h-5 text-brand-600" />
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Top up credits</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t.topup.title}</h1>
         </div>
         <p className="text-sm text-gray-500 mb-8">
           {balance === null ? (
-            'Loading current balance…'
+            t.topup.loadingBalance
           ) : (
             <>
-              Current balance:{' '}
+              {t.topup.currentBalance}{' '}
               <span className="font-semibold text-gray-700 tabular-nums">{balance}</span>{' '}
-              credits.
+              {t.topup.credits}
             </>
           )}{' '}
-          Each generation costs from <span className="font-medium">{CREDITS_PER_IMAGE}</span>{' '}
-          credits.
+          {t.topup.eachGenerationCosts} <span className="font-medium">{CREDITS_PER_IMAGE}</span>{' '}
+          {t.topup.credits}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -64,7 +66,7 @@ export default function TopupPage() {
               >
                 {isBest && (
                   <span className="absolute -top-2.5 left-6 px-2 py-0.5 bg-brand-600 text-white text-[11px] font-semibold rounded-full">
-                    Best value
+                    {t.topup.bestValue}
                   </span>
                 )}
 
@@ -72,7 +74,7 @@ export default function TopupPage() {
                   <span className="text-3xl font-bold text-gray-900 tabular-nums">
                     {pack.credits}
                   </span>
-                  <span className="text-sm font-medium text-gray-500">credits</span>
+                  <span className="text-sm font-medium text-gray-500">{t.topup.credits.replace('.', '')}</span>
                 </div>
                 <p className="text-sm text-gray-500 mb-5">
                   ${pricePerCredit.toFixed(3)} per credit
@@ -88,7 +90,7 @@ export default function TopupPage() {
                         : 'bg-gray-900 text-white hover:bg-gray-800',
                     ].join(' ')}
                   >
-                    Buy for ${pack.price_usd.toFixed(2)}
+                    {t.topup.buyFor.replace('${price}', pack.price_usd.toFixed(2))}
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>

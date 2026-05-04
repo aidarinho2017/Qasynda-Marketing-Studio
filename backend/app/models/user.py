@@ -1,7 +1,7 @@
 import uuid
 from decimal import Decimal
 
-from sqlalchemy import Index, Numeric, String
+from sqlalchemy import Boolean, Index, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.pricing import SIGNUP_CREDITS_GRANT
@@ -25,6 +25,12 @@ class User(TimestampMixin, Base):
         nullable=False,
         default=lambda: Decimal(str(SIGNUP_CREDITS_GRANT)),
         server_default=str(SIGNUP_CREDITS_GRANT),
+    )
+    is_admin: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        server_default="false",
     )
 
     __table_args__ = (

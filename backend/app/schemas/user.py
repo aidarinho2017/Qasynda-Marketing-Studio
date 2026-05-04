@@ -11,6 +11,7 @@ class UserOut(BaseModel):
     name: str
     avatar: str | None
     credits_balance: Decimal
+    is_admin: bool = False
     created_at: datetime
 
     model_config = {"from_attributes": True}

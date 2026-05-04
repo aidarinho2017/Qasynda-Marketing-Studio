@@ -7,11 +7,13 @@ import { ArrowLeft, Loader2, X } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { isAuthenticated } from '@/lib/auth';
 import { refreshCredits } from '@/lib/credits';
+import { useT, interpolate } from '@/lib/i18n';
 import { leadApi } from '../lib/leadApi';
 
 const BASE_COST = 20;
 
 export default function NewCampaignPage() {
+  const { t } = useT();
   const router = useRouter();
   const [role, setRole] = useState('');
   const [problem, setProblem] = useState('');
@@ -70,7 +72,7 @@ export default function NewCampaignPage() {
       void refreshCredits();
       router.replace(`/lead-search/${res.campaign_id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to start campaign.');
+      setError(err instanceof Error ? err.message : t.leadSearch.startCampaign);
       setSubmitting(false);
     }
   };
@@ -84,14 +86,13 @@ export default function NewCampaignPage() {
           className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back
+          {t.leadSearch.back}
         </Link>
 
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">New lead campaign</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t.leadSearch.newTitle}</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Describe your ICP. Costs <strong>{BASE_COST} credits</strong> — fully
-            refunded if our AI thinks no free channel has signal for you.
+            {interpolate(t.leadSearch.newSubtitle, { cost: BASE_COST })}
           </p>
         </div>
 
@@ -100,8 +101,8 @@ export default function NewCampaignPage() {
           className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8 space-y-6"
         >
           <Field
-            label="Who are you targeting?"
-            hint="Role + industry — e.g. “B2B SaaS founders” or “e-commerce sellers in beauty”."
+            label={t.leadSearch.targeting}
+            hint={t.leadSearch.targetingHint}
             required
           >
             <input
@@ -109,14 +110,14 @@ export default function NewCampaignPage() {
               value={role}
               onChange={(e) => setRole(e.target.value)}
               maxLength={200}
-              placeholder="B2B SaaS founders"
+              placeholder={t.leadSearch.targetingPH}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </Field>
 
           <Field
-            label="What problem does your product solve?"
-            hint="One or two sentences. The clearer, the better the channel picks."
+            label={t.leadSearch.problem}
+            hint={t.leadSearch.problemHint}
             required
           >
             <textarea
@@ -124,7 +125,7 @@ export default function NewCampaignPage() {
               onChange={(e) => setProblem(e.target.value)}
               maxLength={600}
               rows={3}
-              placeholder="We help indie founders automate cold outreach without sounding spammy."
+              placeholder={t.leadSearch.problemPH}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-y"
             />
             <div className="text-xs text-gray-400 text-right">
@@ -132,7 +133,7 @@ export default function NewCampaignPage() {
             </div>
           </Field>
 
-          <Field label="Niche keywords" hint="Optional. Press Enter or comma to add.">
+          <Field label={t.leadSearch.keywords} hint={t.leadSearch.keywordsHint}>
             <div className="flex flex-wrap gap-2 px-2 py-2 border border-gray-200 rounded-lg focus-within:ring-2 focus-within:ring-brand-500">
               {keywords.map((k) => (
                 <span
@@ -155,19 +156,19 @@ export default function NewCampaignPage() {
                 onChange={(e) => setKeywordInput(e.target.value)}
                 onKeyDown={handleKeywordKey}
                 onBlur={addKeyword}
-                placeholder={keywords.length === 0 ? 'cold email, automation, …' : ''}
+                placeholder={keywords.length === 0 ? t.leadSearch.keywordsPH : ''}
                 className="flex-1 min-w-[120px] text-sm bg-transparent outline-none py-1"
               />
             </div>
           </Field>
 
-          <Field label="Additional context" hint="Optional. Anything else worth knowing.">
+          <Field label={t.leadSearch.notes} hint={t.leadSearch.notesHint}>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               maxLength={1000}
               rows={3}
-              placeholder="Avoid enterprise. Focus on indie devs and bootstrappers."
+              placeholder={t.leadSearch.notesPH}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-y"
             />
           </Field>
@@ -180,7 +181,7 @@ export default function NewCampaignPage() {
 
           <div className="flex items-center justify-between pt-2">
             <p className="text-xs text-gray-500">
-              {BASE_COST} credits · refundable if refused
+              {interpolate(t.leadSearch.creditsCost, { cost: BASE_COST })}
             </p>
             <button
               type="submit"
@@ -190,10 +191,10 @@ export default function NewCampaignPage() {
               {submitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Starting…
+                  {t.leadSearch.starting}
                 </>
               ) : (
-                <>Start campaign</>
+                <>{t.leadSearch.startCampaign}</>
               )}
             </button>
           </div>

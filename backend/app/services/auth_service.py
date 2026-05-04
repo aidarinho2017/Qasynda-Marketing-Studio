@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.security import create_access_token
+from app.core.security import create_access_token  # noqa: F401 (re-exported implicitly)
 from app.models.user import User
 
 logger = logging.getLogger(__name__)
@@ -98,6 +98,11 @@ async def get_or_create_user(db: AsyncSession, google_payload: dict) -> User:
         await db.refresh(user)
         logger.info("Updated existing user %s (%s)", user.id, email)
 
+    # Auto-elevate accounts listed in ADMIN_EMAILS.
+    if email in settings.ADMIN_EMAILS and not user.is_admin:
+        user.is_admin = True
+        await db.commit()
+
     return user
 
 
@@ -119,6 +124,7 @@ async def register_email_user(
         password_hash=hash_password(password),
         google_sub=None,
         avatar=None,
+        is_admin=normalized in settings.ADMIN_EMAILS,
     )
     db.add(user)
     await db.commit()

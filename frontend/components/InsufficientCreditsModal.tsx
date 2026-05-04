@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Coins, X } from 'lucide-react';
 import { TOPUP_PACKS, onInsufficientCredits } from '@/lib/credits';
+import { useT } from '@/lib/i18n';
 
 export default function InsufficientCreditsModal() {
+  const { t } = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -45,7 +47,7 @@ export default function InsufficientCreditsModal() {
               <Coins className="w-4 h-4 text-brand-600" />
             </span>
             <h3 className="text-base font-semibold text-gray-900">
-              Top up your credits
+              {t.credits.topUpTitle}
             </h3>
           </div>
           <button
@@ -58,7 +60,7 @@ export default function InsufficientCreditsModal() {
         </div>
 
         <p className="mt-3 text-sm text-gray-600 leading-relaxed">
-          {message ?? 'You need credits to use this feature. Pick a pack to continue.'}
+          {message ?? t.credits.defaultMessage}
         </p>
 
         <div className="mt-5 space-y-2">
@@ -81,7 +83,7 @@ export default function InsufficientCreditsModal() {
                     {pack.name ?? pack.id}
                     {isBest && (
                       <span className="ml-2 text-[10px] font-bold tracking-wide text-brand-700 uppercase">
-                        Best value
+                        {t.credits.bestValue}
                       </span>
                     )}
                   </div>
@@ -101,7 +103,7 @@ export default function InsufficientCreditsModal() {
           onClick={close}
           className="mt-4 w-full text-sm text-gray-500 hover:text-gray-900 transition-colors"
         >
-          Maybe later
+          {t.credits.maybeLater}
         </button>
       </div>
     </div>

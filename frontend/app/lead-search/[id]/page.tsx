@@ -18,6 +18,7 @@ import {
 import Navbar from '@/components/Navbar';
 import { isAuthenticated } from '@/lib/auth';
 import { refreshCredits } from '@/lib/credits';
+import { useT, interpolate } from '@/lib/i18n';
 import { leadApi } from '../lib/leadApi';
 import {
   ACTIVE_STATUSES,
@@ -35,6 +36,7 @@ type SortKey = 'score' | 'recency';
 type SignalFilter = 'all' | 'looking_for' | 'complaint' | 'hiring' | 'engagement';
 
 export default function CampaignDetailPage() {
+  const { t } = useT();
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = params?.id;
@@ -81,7 +83,7 @@ export default function CampaignDetailPage() {
       }
     } catch (err) {
       if (!mountedRef.current) return;
-      setError(err instanceof Error ? err.message : 'Failed to load campaign.');
+      setError(err instanceof Error ? err.message : t.leadSearch.failedToLoad);
     } finally {
       if (mountedRef.current) setLoading(false);
     }
@@ -98,13 +100,13 @@ export default function CampaignDetailPage() {
 
   const handleDelete = async () => {
     if (!id || !campaign) return;
-    if (!confirm('Delete this campaign? This cannot be undone.')) return;
+    if (!confirm(t.leadSearch.deleteConfirm)) return;
     setDeleting(true);
     try {
       await leadApi.remove(id);
       router.replace('/lead-search');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete.');
+      setError(err instanceof Error ? err.message : t.leadSearch.failedToDelete);
       setDeleting(false);
     }
   };
@@ -113,7 +115,7 @@ export default function CampaignDetailPage() {
     if (!id || !campaign) return;
     if (
       !confirm(
-        `Run another round? Costs ${TOPUP_CREDITS} credits for up to ${TOPUP_LEADS} more leads.`,
+        interpolate(t.leadSearch.topupConfirm, { credits: TOPUP_CREDITS, leads: TOPUP_LEADS }),
       )
     )
       return;
@@ -135,7 +137,7 @@ export default function CampaignDetailPage() {
       wasActiveRef.current = true;
       void poll();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Top-up failed.');
+      setError(err instanceof Error ? err.message : t.leadSearch.topupFailed);
     } finally {
       setToppingUp(false);
     }
@@ -155,7 +157,7 @@ export default function CampaignDetailPage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'CSV export failed.');
+      setError(err instanceof Error ? err.message : t.leadSearch.exportFailed);
     } finally {
       setExporting(false);
     }
@@ -170,11 +172,11 @@ export default function CampaignDetailPage() {
           className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-6"
         >
           <ArrowLeft className="w-4 h-4" />
-          All campaigns
+          {t.leadSearch.allCampaigns}
         </Link>
 
         {loading ? (
-          <p className="text-sm text-gray-500">Loading…</p>
+          <p className="text-sm text-gray-500">{t.leadSearch.loading}</p>
         ) : error && !campaign ? (
           <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
             {error}
@@ -234,6 +236,7 @@ function Header({
   exporting: boolean;
   toppingUp: boolean;
 }) {
+  const { t, locale } = useT();
   const hasLeads = campaign.leads.length > 0;
   const canTopup =
     campaign.status === 'completed' && campaign.rounds < MAX_ROUNDS;
@@ -241,13 +244,13 @@ function Header({
     <div className="flex items-start justify-between gap-4 mb-6">
       <div className="min-w-0">
         <h1 className="text-2xl font-bold text-gray-900 truncate">
-          {campaign.icp.role || 'Untitled ICP'}
+          {campaign.icp.role || t.leadSearch.untitledIcp}
         </h1>
         <p className="text-sm text-gray-500 mt-1 line-clamp-2">{campaign.icp.problem}</p>
         <p className="text-xs text-gray-400 mt-2">
-          Started {new Date(campaign.created_at).toLocaleString()} ·{' '}
-          {campaign.leads_found} / {campaign.leads_target} leads
-          {campaign.rounds > 1 ? ` · ${campaign.rounds} rounds` : null}
+          {t.leadSearch.started} {new Date(campaign.created_at).toLocaleString(locale === 'ru' ? 'ru-RU' : 'en-US')} ·{' '}
+          {campaign.leads_found} / {campaign.leads_target} {t.leadSearch.filterAll.toLowerCase()}
+          {campaign.rounds > 1 ? ` · ${interpolate(t.leadSearch.rounds, { n: campaign.rounds })}` : null}
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2 shrink-0 justify-end">
@@ -264,11 +267,11 @@ function Header({
             ) : (
               <Plus className="w-4 h-4" />
             )}
-            Find more ({TOPUP_CREDITS} cr)
+            {interpolate(t.leadSearch.findMore, { credits: TOPUP_CREDITS })}
           </button>
         ) : campaign.status === 'completed' && campaign.rounds >= MAX_ROUNDS ? (
           <span className="text-xs text-gray-400 px-2">
-            Max {MAX_ROUNDS} rounds reached
+            {interpolate(t.leadSearch.maxRoundsReached, { n: MAX_ROUNDS })}
           </span>
         ) : null}
         {hasLeads ? (
@@ -283,14 +286,14 @@ function Header({
             ) : (
               <Download className="w-4 h-4" />
             )}
-            Export CSV
+            {t.leadSearch.exportCsv}
           </button>
         ) : null}
         <button
           type="button"
           onClick={onRefresh}
           className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-500"
-          title="Refresh"
+          title={t.leadSearch.refresh}
         >
           <RefreshCw className="w-4 h-4" />
         </button>
@@ -299,7 +302,7 @@ function Header({
           onClick={onDelete}
           disabled={deleting}
           className="p-2 rounded-lg border border-gray-200 hover:bg-red-50 hover:border-red-200 hover:text-red-600 text-gray-500 disabled:opacity-50"
-          title="Delete"
+          title={t.leadSearch.delete}
         >
           <Trash2 className="w-4 h-4" />
         </button>
@@ -329,21 +332,20 @@ function ProgressCard({ campaign }: { campaign: LeadCampaignDetail }) {
 }
 
 function RefusedCard({ campaign }: { campaign: LeadCampaignDetail }) {
+  const { t } = useT();
   return (
     <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-4">
       <div className="flex items-start gap-3">
         <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-amber-900">
-            We refunded your credits
+            {t.leadSearch.refusedTitle}
           </h3>
           <p className="text-sm text-amber-800 mt-1">
-            {campaign.refused_reason ??
-              "Your ICP doesn't have strong signal on the free channels we currently support."}
+            {campaign.refused_reason ?? t.leadSearch.refusedDefault}
           </p>
           <p className="text-xs text-amber-700 mt-3">
-            Try refining your ICP — narrower role, clearer problem, or different
-            niche keywords. Paid channels (X, LinkedIn) are coming soon.
+            {t.leadSearch.refusedHint}
           </p>
         </div>
       </div>
@@ -352,17 +354,17 @@ function RefusedCard({ campaign }: { campaign: LeadCampaignDetail }) {
 }
 
 function FailedCard({ campaign }: { campaign: LeadCampaignDetail }) {
+  const { t } = useT();
   return (
     <div className="bg-red-50 border border-red-200 rounded-2xl p-6 mb-4">
       <div className="flex items-start gap-3">
         <XCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-red-900">
-            Campaign failed — credits refunded
+            {t.leadSearch.failedTitle}
           </h3>
           <p className="text-sm text-red-800 mt-1">
-            {campaign.error_message ??
-              'Something went wrong on our side. Please try again.'}
+            {campaign.error_message ?? t.leadSearch.failedDefault}
           </p>
         </div>
       </div>
@@ -371,19 +373,17 @@ function FailedCard({ campaign }: { campaign: LeadCampaignDetail }) {
 }
 
 function NoLeadsCard() {
+  const { t } = useT();
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-8 mb-4 text-center">
-      <p className="text-sm font-medium text-gray-900">No qualifying leads found</p>
-      <p className="text-xs text-gray-500 mt-1">
-        We scanned the picked channels but didn&apos;t find posts that scored high
-        enough on intent. If credits weren&apos;t refunded, it means the campaign
-        completed normally — try a different ICP angle next time.
-      </p>
+      <p className="text-sm font-medium text-gray-900">{t.leadSearch.noLeadsTitle}</p>
+      <p className="text-xs text-gray-500 mt-1">{t.leadSearch.noLeadsBody}</p>
     </div>
   );
 }
 
 function LeadsTable({ leads }: { leads: Lead[] }) {
+  const { t } = useT();
   const [sort, setSort] = useState<SortKey>('score');
   const [filter, setFilter] = useState<SignalFilter>('all');
   const showRounds = useMemo(
@@ -422,43 +422,43 @@ function LeadsTable({ leads }: { leads: Lead[] }) {
     <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden mb-4">
       <div className="px-4 py-3 border-b border-gray-100 flex flex-wrap items-center gap-2">
         <FilterChip
-          label={`All · ${counts.all}`}
+          label={`${t.leadSearch.filterAll} · ${counts.all}`}
           active={filter === 'all'}
           onClick={() => setFilter('all')}
         />
         <FilterChip
-          label={`Looking for · ${counts.looking_for}`}
+          label={`${t.leadSearch.filterLookingFor} · ${counts.looking_for}`}
           active={filter === 'looking_for'}
           onClick={() => setFilter('looking_for')}
           disabled={counts.looking_for === 0}
         />
         <FilterChip
-          label={`Complaints · ${counts.complaint}`}
+          label={`${t.leadSearch.filterComplaints} · ${counts.complaint}`}
           active={filter === 'complaint'}
           onClick={() => setFilter('complaint')}
           disabled={counts.complaint === 0}
         />
         <FilterChip
-          label={`Hiring · ${counts.hiring}`}
+          label={`${t.leadSearch.filterHiring} · ${counts.hiring}`}
           active={filter === 'hiring'}
           onClick={() => setFilter('hiring')}
           disabled={counts.hiring === 0}
         />
         <FilterChip
-          label={`Engagement · ${counts.engagement}`}
+          label={`${t.leadSearch.filterEngagement} · ${counts.engagement}`}
           active={filter === 'engagement'}
           onClick={() => setFilter('engagement')}
           disabled={counts.engagement === 0}
         />
         <div className="ml-auto flex items-center gap-1 text-xs text-gray-500">
-          <span>Sort by</span>
+          <span>{t.leadSearch.sortBy}</span>
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as SortKey)}
             className="border border-gray-200 rounded px-2 py-1 text-xs bg-white"
           >
-            <option value="score">Intent score</option>
-            <option value="recency">Most recent</option>
+            <option value="score">{t.leadSearch.sortScore}</option>
+            <option value="recency">{t.leadSearch.sortRecent}</option>
           </select>
         </div>
       </div>
@@ -500,6 +500,7 @@ function FilterChip({
 }
 
 function LeadRow({ lead, showRound }: { lead: Lead; showRound: boolean }) {
+  const { t, locale } = useT();
   const platformLabel: Record<string, string> = {
     reddit: 'Reddit',
     youtube: 'YouTube',
@@ -522,14 +523,14 @@ function LeadRow({ lead, showRound }: { lead: Lead; showRound: boolean }) {
             </span>
             {lead.post_created_at ? (
               <span className="text-xs text-gray-400">
-                {new Date(lead.post_created_at).toLocaleDateString()}
+                {new Date(lead.post_created_at).toLocaleDateString(locale === 'ru' ? 'ru-RU' : 'en-US')}
               </span>
             ) : null}
           </div>
           <p className="text-sm text-gray-900 line-clamp-2">
-            <span className="text-gray-500">“</span>
+            <span className="text-gray-500">"</span>
             {lead.signal_quote}
-            <span className="text-gray-500">”</span>
+            <span className="text-gray-500">"</span>
           </p>
           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
             {lead.enriched_role ? <span>{lead.enriched_role}</span> : null}
@@ -538,7 +539,7 @@ function LeadRow({ lead, showRound }: { lead: Lead; showRound: boolean }) {
           </div>
           {lead.suggested_angle ? (
             <p className="mt-1.5 text-xs">
-              <span className="text-gray-400">Angle: </span>
+              <span className="text-gray-400">{t.leadSearch.angle} </span>
               <span className="text-brand-700 font-medium">
                 {lead.suggested_angle}
               </span>
@@ -551,7 +552,7 @@ function LeadRow({ lead, showRound }: { lead: Lead; showRound: boolean }) {
           rel="noopener noreferrer"
           className="shrink-0 inline-flex items-center gap-1 text-xs text-gray-500 hover:text-brand-600 mt-1"
         >
-          Open
+          {t.leadSearch.open}
           <ExternalLink className="w-3 h-3" />
         </a>
       </div>
@@ -574,11 +575,12 @@ function ScoreBadge({ score }: { score: number }) {
 }
 
 function SignalBadge({ signal }: { signal: string }) {
+  const { t } = useT();
   const labels: Record<string, string> = {
-    looking_for: 'Looking for',
-    complaint: 'Complaint',
-    hiring: 'Hiring',
-    engagement: 'Engagement',
+    looking_for: t.leadSearch.signalLookingFor,
+    complaint: t.leadSearch.signalComplaint,
+    hiring: t.leadSearch.signalHiring,
+    engagement: t.leadSearch.signalEngagement,
   };
   return (
     <span className="text-xs px-2 py-0.5 rounded bg-amber-50 text-amber-800">
@@ -588,12 +590,13 @@ function SignalBadge({ signal }: { signal: string }) {
 }
 
 function ChannelsCard({ channels }: { channels: ChannelPick[] }) {
+  const { t } = useT();
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-4">
       <div className="flex items-center gap-2 mb-4">
         <CheckCircle2 className="w-5 h-5 text-emerald-500" />
         <h3 className="text-sm font-semibold text-gray-900">
-          Channels picked for your ICP
+          {t.leadSearch.channelsPicked}
         </h3>
       </div>
       <div className="space-y-4">
@@ -606,6 +609,7 @@ function ChannelsCard({ channels }: { channels: ChannelPick[] }) {
 }
 
 function ChannelBlock({ pick }: { pick: ChannelPick }) {
+  const { t } = useT();
   const labels: Record<ChannelPick['channel'], string> = {
     reddit: 'Reddit',
     youtube: 'YouTube',
@@ -616,18 +620,18 @@ function ChannelBlock({ pick }: { pick: ChannelPick }) {
       <div className="flex items-center justify-between mb-2">
         <p className="text-sm font-semibold text-gray-900">{labels[pick.channel]}</p>
         <span className="text-xs text-gray-500">
-          {pick.confidence}% confidence
+          {interpolate(t.leadSearch.confidence, { n: pick.confidence })}
         </span>
       </div>
       <p className="text-sm text-gray-600 mb-3">{pick.reason}</p>
       {pick.subreddits && pick.subreddits.length > 0 ? (
-        <Pills label="Subreddits" items={pick.subreddits.map((s) => `r/${s}`)} />
+        <Pills label={t.leadSearch.subreddits} items={pick.subreddits.map((s) => `r/${s}`)} />
       ) : null}
       {pick.youtube_queries && pick.youtube_queries.length > 0 ? (
-        <Pills label="Search queries" items={pick.youtube_queries} />
+        <Pills label={t.leadSearch.searchQueries} items={pick.youtube_queries} />
       ) : null}
       {pick.hn_queries && pick.hn_queries.length > 0 ? (
-        <Pills label="Signal phrases" items={pick.hn_queries} />
+        <Pills label={t.leadSearch.signalPhrases} items={pick.hn_queries} />
       ) : null}
     </div>
   );

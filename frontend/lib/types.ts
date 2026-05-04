@@ -4,6 +4,7 @@ export interface User {
   name: string;
   avatar: string | null;
   credits_balance: number;
+  is_admin: boolean;
   created_at: string;
 }
 
@@ -73,4 +74,36 @@ export interface TokenResponse {
   access_token: string;
   token_type: string;
   user: User;
+}
+
+// Catalogue Mode types
+
+export const CATALOGUE_COST_PER_PRODUCT = 17; // credits_for_count(4)
+
+export interface CatalogueListItem {
+  id: string;
+  name: string | null;
+  mode: string;
+  settings: { style: string; layout: string; creativity: number };
+  total_items: number;
+  completed: number;
+  failed: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CatalogueDetail extends CatalogueListItem {
+  generations: Generation[];
+}
+
+export interface CatalogueStartResponse {
+  catalogue_id: string;
+  generation_ids: string[];
+}
+
+export interface CataloguesListResponse {
+  items: CatalogueListItem[];
+  total: number;
+  limit: number;
+  offset: number;
 }

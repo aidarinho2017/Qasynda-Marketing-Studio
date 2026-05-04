@@ -3,6 +3,7 @@
 import { Suspense, useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
+  Check,
   ChevronDown,
   Film,
   LayoutGrid,
@@ -25,7 +26,10 @@ import {
   triggerInsufficientCredits,
   useCredits,
 } from '@/lib/credits';
+import { useT, interpolate } from '@/lib/i18n';
 import type { GenerationStartResponse } from '@/lib/types';
+import { TemplateStatus } from '@/components/TemplatePicker';
+import { MARKETPLACE_TEMPLATES, UGC_TEMPLATES } from '@/lib/templates';
 
 // ─── Shared input primitives ──────────────────────────────────────────────────
 
@@ -72,10 +76,11 @@ function Slider({
   min?: number;
   max?: number;
 }) {
+  const { t } = useT();
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <Label>Creativity</Label>
+        <Label>{t.generate.creativity}</Label>
         <span className="text-sm font-semibold text-brand-600 tabular-nums">{value}/10</span>
       </div>
       <input
@@ -87,9 +92,9 @@ function Slider({
         className="w-full accent-brand-600 cursor-pointer"
       />
       <div className="flex justify-between text-xs text-gray-400 mt-1">
-        <span>Faithful</span>
-        <span>Balanced</span>
-        <span>Bold</span>
+        <span>{t.generate.faithful}</span>
+        <span>{t.generate.balanced}</span>
+        <span>{t.generate.bold}</span>
       </div>
     </div>
   );
@@ -104,6 +109,7 @@ function SubmitButton({
   submitting: boolean;
   fileMissing: boolean;
 }) {
+  const { t } = useT();
   const { balance } = useCredits();
   const cost = bundlePriceForCount(count);
   const insufficient = balance !== null && balance < cost;
@@ -119,10 +125,12 @@ function SubmitButton({
         }
         className="w-full py-3 px-6 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-700 transition-colors flex items-center justify-center gap-2"
       >
-        Need {cost} credits — top up
+        {interpolate(t.generate.needCredits, { cost })}
       </button>
     );
   }
+
+  const imageWord = count === 1 ? t.generate.imageOne : t.generate.imageMany;
 
   return (
     <button
@@ -132,11 +140,11 @@ function SubmitButton({
     >
       {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
       {submitting ? (
-        'Generating…'
+        t.generate.generating
       ) : (
         <>
-          Generate {count} image{count !== 1 ? 's' : ''}
-          <span className="opacity-80 font-normal">· {cost} credits</span>
+          {interpolate(t.generate.generateButton, { count, imageWord })}
+          <span className="opacity-80 font-normal">{interpolate(t.generate.costSuffix, { cost })}</span>
         </>
       )}
     </button>
@@ -144,9 +152,10 @@ function SubmitButton({
 }
 
 function CountPicker({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  const { t } = useT();
   return (
     <div>
-      <Label>Number of images</Label>
+      <Label>{t.generate.numberOfImages}</Label>
       <div className="grid grid-cols-4 gap-2">
         {[1, 2, 3, 4].map((n) => {
           const bundle = bundlePriceForCount(n);
@@ -249,10 +258,11 @@ function AdvancedSettings({
   referenceFile: File | null;
   onReferenceFile: (f: File | null) => void;
 }) {
+  const { t } = useT();
   return (
-    <Collapsible label="Advanced settings">
+    <Collapsible label={t.generate.advancedSettings}>
       <div className="grid grid-cols-2 gap-4">
-        <FormGroup label="Style">
+        <FormGroup label={t.generate.style}>
           <Select
             value={state.style}
             onChange={(e) => onChange({ ...state, style: e.target.value })}
@@ -265,14 +275,14 @@ function AdvancedSettings({
           </Select>
         </FormGroup>
 
-        <FormGroup label="Layout">
+        <FormGroup label={t.generate.layout}>
           <Select
             value={state.layout}
             onChange={(e) => onChange({ ...state, layout: e.target.value })}
           >
-            <option value="square">Square (1:1)</option>
-            <option value="portrait">Portrait (3:4)</option>
-            <option value="landscape">Landscape (16:9)</option>
+            <option value="square">{t.generate.squareLayout}</option>
+            <option value="portrait">{t.generate.portraitLayout}</option>
+            <option value="landscape">{t.generate.landscapeLayout}</option>
           </Select>
         </FormGroup>
       </div>
@@ -283,9 +293,9 @@ function AdvancedSettings({
       />
 
       <div>
-        <Label>Reference design (optional)</Label>
+        <Label>{t.generate.referenceDesign}</Label>
         <p className="text-xs text-gray-400 mb-2">
-          Upload an image whose style or composition you want the result to take cues from.
+          {t.generate.referenceHint}
         </p>
         {referenceFile ? (
           <div className="flex items-center justify-between gap-3 px-3.5 py-2.5 border border-gray-200 rounded-xl bg-gray-50">
@@ -295,7 +305,7 @@ function AdvancedSettings({
               onClick={() => onReferenceFile(null)}
               className="text-xs text-red-500 hover:underline shrink-0"
             >
-              Remove
+              {t.generate.remove}
             </button>
           </div>
         ) : (
@@ -308,13 +318,6 @@ function AdvancedSettings({
 
 // ─── Marketplace form (Cards) ────────────────────────────────────────────────
 
-const CARD_STYLE_OPTIONS = [
-  { value: 'minimal', label: 'Minimal' },
-  { value: 'premium', label: 'Premium' },
-  { value: 'bright', label: 'Bright' },
-  { value: 'infographic', label: 'Infographic' },
-];
-
 function MarketplaceForm({
   file,
   onFile,
@@ -322,6 +325,8 @@ function MarketplaceForm({
   submitting,
   error,
   initialDescription = '',
+  selectedTemplate,
+  onClearTemplate,
 }: {
   file: File | null;
   onFile: (f: File) => void;
@@ -329,7 +334,10 @@ function MarketplaceForm({
   submitting: boolean;
   error: string | null;
   initialDescription?: string;
+  selectedTemplate: string | null;
+  onClearTemplate: () => void;
 }) {
+  const { t } = useT();
   const [description, setDescription] = useState(initialDescription);
   const [advanced, setAdvanced] = useState<AdvancedState>({
     style: 'minimal',
@@ -338,6 +346,13 @@ function MarketplaceForm({
     count: 4,
   });
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
+
+  const CARD_STYLE_OPTIONS = [
+    { value: 'minimal', label: t.generate.styleMinimal },
+    { value: 'premium', label: t.generate.stylePremium },
+    { value: 'bright', label: t.generate.styleBright },
+    { value: 'infographic', label: t.generate.styleInfographic },
+  ];
 
   // Sync if a handoff description arrives after mount.
   useEffect(() => {
@@ -349,9 +364,9 @@ function MarketplaceForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) { alert('Please upload a product image.'); return; }
+    if (!file) { alert(t.generate.alertUploadImage); return; }
     if (description.trim().length < 10) {
-      alert('Please describe your product in at least 10 characters.');
+      alert(t.generate.alertDescribeProduct);
       return;
     }
 
@@ -362,21 +377,29 @@ function MarketplaceForm({
     fd.append('layout', advanced.layout);
     fd.append('creativity', String(advanced.creativity));
     fd.append('count', String(advanced.count));
-    if (referenceFile) fd.append('reference_image', referenceFile);
+    let effectiveReference = referenceFile;
+    if (!effectiveReference && selectedTemplate) {
+      const res = await fetch(selectedTemplate);
+      const blob = await res.blob();
+      effectiveReference = new File([blob], 'template.png', { type: blob.type });
+    }
+    if (effectiveReference) fd.append('reference_image', effectiveReference);
 
     await onSubmit(fd);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      <TemplateStatus selected={selectedTemplate} onClear={onClearTemplate} />
+
       <div>
-        <Label>Product photo</Label>
+        <Label>{t.generate.productPhoto}</Label>
         <UploadForm onFile={onFile} currentFile={file} />
       </div>
 
-      <FormGroup label="Tell about your product">
+      <FormGroup label={t.generate.tellAboutProduct}>
         <Textarea
-          placeholder="What is it, who is it for, what makes it special? The more vivid the description, the better the results."
+          placeholder={t.generate.tellAboutProductPlaceholder}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           required
@@ -409,25 +432,24 @@ function MarketplaceForm({
 
 // ─── UGC form ─────────────────────────────────────────────────────────────────
 
-const UGC_STYLE_OPTIONS = [
-  { value: 'realistic', label: 'Realistic' },
-  { value: 'instagram', label: 'Instagram' },
-  { value: 'tiktok', label: 'TikTok' },
-];
-
 function UGCForm({
   file,
   onFile,
   onSubmit,
   submitting,
   error,
+  selectedTemplate,
+  onClearTemplate,
 }: {
   file: File | null;
   onFile: (f: File) => void;
   onSubmit: (form: FormData) => Promise<void>;
   submitting: boolean;
   error: string | null;
+  selectedTemplate: string | null;
+  onClearTemplate: () => void;
 }) {
+  const { t } = useT();
   const [useCase, setUseCase] = useState('');
   const [wishes, setWishes] = useState('');
   const [advanced, setAdvanced] = useState<AdvancedState>({
@@ -438,11 +460,17 @@ function UGCForm({
   });
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
 
+  const UGC_STYLE_OPTIONS = [
+    { value: 'realistic', label: t.generate.styleRealistic },
+    { value: 'instagram', label: t.generate.styleInstagram },
+    { value: 'tiktok', label: t.generate.styleTikTok },
+  ];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) { alert('Please upload a product image.'); return; }
+    if (!file) { alert(t.generate.alertUploadImage); return; }
     if (useCase.trim().length < 10) {
-      alert('Please describe the use case in at least 10 characters.');
+      alert(t.generate.alertDescribeUseCase);
       return;
     }
 
@@ -454,31 +482,39 @@ function UGCForm({
     fd.append('layout', advanced.layout);
     fd.append('creativity', String(advanced.creativity));
     fd.append('count', String(advanced.count));
-    if (referenceFile) fd.append('reference_image', referenceFile);
+    let effectiveReference = referenceFile;
+    if (!effectiveReference && selectedTemplate) {
+      const res = await fetch(selectedTemplate);
+      const blob = await res.blob();
+      effectiveReference = new File([blob], 'template.png', { type: blob.type });
+    }
+    if (effectiveReference) fd.append('reference_image', effectiveReference);
 
     await onSubmit(fd);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      <TemplateStatus selected={selectedTemplate} onClear={onClearTemplate} />
+
       <div>
-        <Label>Product photo</Label>
+        <Label>{t.generate.productPhoto}</Label>
         <UploadForm onFile={onFile} currentFile={file} />
       </div>
 
-      <FormGroup label="How is the product being used?">
+      <FormGroup label={t.generate.howIsUsed}>
         <Textarea
-          placeholder="Where, when, and by whom is the product used? E.g. 'Used in the kitchen by a 30-year-old home chef while cooking dinner.'"
+          placeholder={t.generate.howIsUsedPlaceholder}
           value={useCase}
           onChange={(e) => setUseCase(e.target.value)}
           required
         />
       </FormGroup>
 
-      <FormGroup label="Wishes (optional)">
+      <FormGroup label={t.generate.wishes}>
         <Textarea
           rows={3}
-          placeholder="Any specific mood, lighting, props, or vibe you want? Leave blank to let the AI decide."
+          placeholder={t.generate.wishesPlaceholder}
           value={wishes}
           onChange={(e) => setWishes(e.target.value)}
         />
@@ -523,13 +559,14 @@ function EnhanceForm({
   submitting: boolean;
   error: string | null;
 }) {
+  const { t } = useT();
   const [wishes, setWishes] = useState('');
   const [count, setCount] = useState(4);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
-      alert('Please upload a product image.');
+      alert(t.generate.alertUploadImage);
       return;
     }
 
@@ -544,23 +581,23 @@ function EnhanceForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <Label>Product photo</Label>
+        <Label>{t.generate.productPhoto}</Label>
         <UploadForm onFile={onFile} currentFile={file} />
       </div>
 
       <div className="bg-brand-50 border border-brand-100 rounded-xl px-4 py-3 text-sm text-brand-900 leading-relaxed">
-        We&apos;ll automatically:
+        {t.generate.willAutomatically}
         <ul className="mt-1.5 ml-1 space-y-0.5 text-brand-800">
-          <li>· remove the background</li>
-          <li>· fix the lighting</li>
-          <li>· sharpen the details</li>
+          <li>{t.generate.removeBg}</li>
+          <li>{t.generate.fixLighting}</li>
+          <li>{t.generate.sharpenDetails}</li>
         </ul>
       </div>
 
-      <FormGroup label="Tell us how to improve (optional)">
+      <FormGroup label={t.generate.howToImprove}>
         <Textarea
           rows={3}
-          placeholder="E.g. 'make the colors warmer', 'keep the natural shadow', 'whiter background'. Leave blank to let the AI decide."
+          placeholder={t.generate.howToImprovePlaceholder}
           value={wishes}
           onChange={(e) => setWishes(e.target.value)}
         />
@@ -582,6 +619,7 @@ function EnhanceForm({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 function GenerateContent() {
+  const { t } = useT();
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialMode = (searchParams.get('mode') as 'marketplace' | 'ugc' | 'enhance') ?? 'marketplace';
@@ -591,6 +629,8 @@ function GenerateContent() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [handoffDescription, setHandoffDescription] = useState<string>('');
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [rightTab, setRightTab] = useState<'generations' | 'templates'>('generations');
   const galleryRef = useRef<GenerationsGalleryHandle>(null);
 
   useEffect(() => {
@@ -612,7 +652,12 @@ function GenerateContent() {
     setMode(m);
     setFile(null);
     setError(null);
+    setSelectedTemplate(null);
   };
+
+  const currentTemplates =
+    mode === 'marketplace' ? MARKETPLACE_TEMPLATES :
+    mode === 'ugc' ? UGC_TEMPLATES : [];
 
   const handleSubmit = async (fd: FormData) => {
     setSubmitting(true);
@@ -641,9 +686,9 @@ function GenerateContent() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-16">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">New Generation</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t.generate.title}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Upload your product and tell us about it. Tweak advanced settings if you want.
+            {t.generate.subtitle}
           </p>
         </div>
 
@@ -663,7 +708,7 @@ function GenerateContent() {
                 ].join(' ')}
               >
                 <LayoutGrid className="w-4 h-4" />
-                Cards
+                {t.generate.cards}
               </button>
               <button
                 type="button"
@@ -676,7 +721,7 @@ function GenerateContent() {
                 ].join(' ')}
               >
                 <Film className="w-4 h-4" />
-                UGC
+                {t.generate.ugc}
               </button>
               <button
                 type="button"
@@ -689,7 +734,7 @@ function GenerateContent() {
                 ].join(' ')}
               >
                 <Wand2 className="w-4 h-4" />
-                Enhance
+                {t.generate.enhance}
               </button>
             </div>
 
@@ -703,6 +748,8 @@ function GenerateContent() {
                   submitting={submitting}
                   error={error}
                   initialDescription={handoffDescription}
+                  selectedTemplate={selectedTemplate}
+                  onClearTemplate={() => setSelectedTemplate(null)}
                 />
               )}
               {mode === 'ugc' && (
@@ -712,6 +759,8 @@ function GenerateContent() {
                   onSubmit={handleSubmit}
                   submitting={submitting}
                   error={error}
+                  selectedTemplate={selectedTemplate}
+                  onClearTemplate={() => setSelectedTemplate(null)}
                 />
               )}
               {mode === 'enhance' && (
@@ -726,18 +775,77 @@ function GenerateContent() {
             </div>
           </div>
 
-          {/* Right: generations gallery */}
+          {/* Right: tabbed panel */}
           <div>
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Your generations</h2>
-              <p className="text-xs text-gray-500 mt-0.5">
-                New generations appear here as they process.
-              </p>
+            {/* Tab switcher */}
+            <div className="flex items-center gap-1 p-1 bg-white border border-gray-200 rounded-xl shadow-sm mb-6 w-fit">
+              <button
+                type="button"
+                onClick={() => setRightTab('generations')}
+                className={[
+                  'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                  rightTab === 'generations'
+                    ? 'bg-brand-600 text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700',
+                ].join(' ')}
+              >
+                {t.generate.yourGenerations}
+              </button>
+              {mode !== 'enhance' && (
+                <button
+                  type="button"
+                  onClick={() => setRightTab('templates')}
+                  className={[
+                    'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                    rightTab === 'templates'
+                      ? 'bg-brand-600 text-white shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700',
+                  ].join(' ')}
+                >
+                  {t.generate.templateLibrary}
+                </button>
+              )}
             </div>
-            <GenerationsGallery
-              ref={galleryRef}
-              gridClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
-            />
+
+            {/* Generations tab */}
+            {rightTab === 'generations' && (
+              <GenerationsGallery
+                ref={galleryRef}
+                gridClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
+              />
+            )}
+
+            {/* Templates tab */}
+            {rightTab === 'templates' && (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                {currentTemplates.map((path) => {
+                  const active = selectedTemplate === path;
+                  return (
+                    <button
+                      key={path}
+                      type="button"
+                      onClick={() => setSelectedTemplate(active ? null : path)}
+                      className={[
+                        'relative aspect-square rounded-xl overflow-hidden border-2 transition-all bg-gray-50',
+                        active
+                          ? 'border-brand-600 shadow-md'
+                          : 'border-transparent hover:border-brand-300',
+                      ].join(' ')}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={path} alt="" className="w-full h-full object-contain" />
+                      {active && (
+                        <div className="absolute inset-0 bg-brand-600/10 flex items-end justify-end p-1.5">
+                          <span className="bg-brand-600 rounded-full p-0.5">
+                            <Check className="w-3 h-3 text-white" />
+                          </span>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </main>

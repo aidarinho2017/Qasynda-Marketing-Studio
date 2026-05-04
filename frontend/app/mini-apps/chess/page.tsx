@@ -16,20 +16,13 @@ import {
   triggerInsufficientCredits,
   useCredits,
 } from '@/lib/credits';
+import { useT, interpolate } from '@/lib/i18n';
 import type { GenerationStartResponse } from '@/lib/types';
 
 type ChessPiece = 'pawn' | 'rook' | 'knight' | 'bishop' | 'queen' | 'king';
 
-const PIECES: { value: ChessPiece; label: string; emoji: string; desc: string }[] = [
-  { value: 'pawn',   label: 'Pawn',   emoji: '♟', desc: 'Humble soldier' },
-  { value: 'rook',   label: 'Rook',   emoji: '♜', desc: 'Castle tower' },
-  { value: 'knight', label: 'Knight', emoji: '♞', desc: 'Horse warrior' },
-  { value: 'bishop', label: 'Bishop', emoji: '♝', desc: 'Mitre-hatted' },
-  { value: 'queen',  label: 'Queen',  emoji: '♛', desc: 'Most powerful' },
-  { value: 'king',   label: 'King',   emoji: '♚', desc: 'The big boss' },
-];
-
 export default function ChessPage() {
+  const { t } = useT();
   const router = useRouter();
   const galleryRef = useRef<GenerationsGalleryHandle>(null);
 
@@ -46,7 +39,7 @@ export default function ChessPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
-      alert('Please upload a photo.');
+      alert(t.chess.alertUpload);
       return;
     }
     setSubmitting(true);
@@ -62,7 +55,7 @@ export default function ChessPage() {
       setFile(null);
       await Promise.all([galleryRef.current?.refetch(), refreshCredits()]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Generation failed.');
+      setError(err instanceof Error ? err.message : t.chess.generating);
     } finally {
       setSubmitting(false);
     }
@@ -78,7 +71,7 @@ export default function ChessPage() {
           className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-4 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          All mini apps
+          {t.chess.backToMiniApps}
         </button>
 
         <div className="mb-8 flex items-start gap-3">
@@ -86,9 +79,9 @@ export default function ChessPage() {
             <Crown className="w-5 h-5 text-brand-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Chess</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t.chess.title}</h1>
             <p className="text-sm text-gray-500 mt-0.5">
-              Upload a photo of your friend and turn them into a chess piece.
+              {t.chess.subtitle}
             </p>
           </div>
         </div>
@@ -102,7 +95,7 @@ export default function ChessPage() {
             >
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Friend&apos;s photo
+                  {t.chess.friendPhoto}
                 </label>
                 <UploadForm onFile={setFile} currentFile={file} />
               </div>
@@ -111,11 +104,11 @@ export default function ChessPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tell us your wishes (optional)
+                  {t.chess.wishes}
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="E.g. 'make it dark walnut wood', 'give it a crown', 'marble style'."
+                  placeholder={t.chess.wishesPH}
                   value={wishes}
                   onChange={(e) => setWishes(e.target.value)}
                   className="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-colors resize-y"
@@ -132,16 +125,16 @@ export default function ChessPage() {
             </form>
 
             <p className="text-xs text-gray-400 mt-3 text-center">
-              Check mate. Your friend never saw this coming.
+              {t.chess.checkmate}
             </p>
           </div>
 
           {/* Right pane: generations */}
           <div>
             <div className="mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Your generations</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t.chess.yourGenerations}</h2>
               <p className="text-xs text-gray-500 mt-0.5">
-                New generations appear here as they process.
+                {t.chess.generationsSubtitle}
               </p>
             </div>
             <GenerationsGallery
@@ -162,10 +155,20 @@ function PiecePicker({
   value: ChessPiece;
   onChange: (p: ChessPiece) => void;
 }) {
+  const { t } = useT();
+  const PIECES: { value: ChessPiece; label: string; emoji: string; desc: string }[] = [
+    { value: 'pawn',   label: 'Pawn',   emoji: '♟', desc: t.chess.pawnDesc },
+    { value: 'rook',   label: 'Rook',   emoji: '♜', desc: t.chess.rookDesc },
+    { value: 'knight', label: 'Knight', emoji: '♞', desc: t.chess.knightDesc },
+    { value: 'bishop', label: 'Bishop', emoji: '♝', desc: t.chess.bishopDesc },
+    { value: 'queen',  label: 'Queen',  emoji: '♛', desc: t.chess.queenDesc },
+    { value: 'king',   label: 'King',   emoji: '♚', desc: t.chess.kingDesc },
+  ];
+
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-2">
-        Chess piece
+        {t.chess.chessPiece}
       </label>
       <div className="grid grid-cols-3 gap-2">
         {PIECES.map((p) => (
@@ -196,6 +199,7 @@ function ChessSubmit({
   submitting: boolean;
   fileMissing: boolean;
 }) {
+  const { t } = useT();
   const { balance } = useCredits();
   const cost = bundlePriceForCount(1);
   const insufficient = balance !== null && balance < cost;
@@ -205,13 +209,11 @@ function ChessSubmit({
       <button
         type="button"
         onClick={() =>
-          triggerInsufficientCredits(
-            `Need ${cost} credits to generate a chess piece, you have ${balance}.`,
-          )
+          triggerInsufficientCredits(interpolate(t.chess.needCredits, { cost }))
         }
         className="w-full py-3 px-6 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-700 transition-colors flex items-center justify-center gap-2"
       >
-        Need {cost} credits — top up
+        {interpolate(t.chess.needCredits, { cost })}
       </button>
     );
   }
@@ -224,11 +226,11 @@ function ChessSubmit({
     >
       {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
       {submitting
-        ? 'Generating…'
+        ? t.chess.generating
         : (
           <>
-            Make them a chess piece
-            <span className="opacity-80 font-normal">· {cost} credits</span>
+            {t.chess.makeChess}
+            <span className="opacity-80 font-normal">{interpolate(t.chess.costSuffix, { cost })}</span>
           </>
         )}
     </button>

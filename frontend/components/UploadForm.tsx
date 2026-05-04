@@ -2,6 +2,7 @@
 
 import { useRef, useState, useCallback } from 'react';
 import { UploadCloud, X } from 'lucide-react';
+import { useT } from '@/lib/i18n';
 
 interface UploadFormProps {
   onFile: (file: File) => void;
@@ -10,6 +11,7 @@ interface UploadFormProps {
 }
 
 export default function UploadForm({ onFile, currentFile }: UploadFormProps) {
+  const { t } = useT();
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -20,18 +22,18 @@ export default function UploadForm({ onFile, currentFile }: UploadFormProps) {
       setError(null);
       const allowed = ['image/jpeg', 'image/png', 'image/webp'];
       if (!allowed.includes(file.type)) {
-        setError('Only JPEG, PNG, and WebP images are supported.');
+        setError(t.upload.invalidType);
         return;
       }
       if (file.size > 10 * 1024 * 1024) {
-        setError('File is too large. Maximum size is 10 MB.');
+        setError(t.upload.tooLarge);
         return;
       }
       const url = URL.createObjectURL(file);
       setPreview(url);
       onFile(file);
     },
-    [onFile],
+    [onFile, t],
   );
 
   const handleDrop = useCallback(
@@ -86,10 +88,10 @@ export default function UploadForm({ onFile, currentFile }: UploadFormProps) {
         >
           <UploadCloud className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <p className="text-sm text-gray-600">
-            Drag & drop or{' '}
-            <span className="text-brand-600 font-medium">browse</span>
+            {t.upload.dragAndDrop}{' '}
+            <span className="text-brand-600 font-medium">{t.upload.browse}</span>
           </p>
-          <p className="text-xs text-gray-400 mt-1">JPEG, PNG, WebP · max 10 MB</p>
+          <p className="text-xs text-gray-400 mt-1">{t.upload.formatHint}</p>
         </div>
       )}
 

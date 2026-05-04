@@ -13,6 +13,7 @@ import {
 import Navbar from '@/components/Navbar';
 import { isAuthenticated } from '@/lib/auth';
 import { TOPUP_PACKS, topupCredits } from '@/lib/credits';
+import { useT, interpolate } from '@/lib/i18n';
 import type { TopupPack } from '@/lib/types';
 
 // ─── Card formatting helpers ────────────────────────────────────────────────
@@ -60,6 +61,7 @@ function brandLabel(brand: ReturnType<typeof detectCardBrand>): string {
 // ─── Order summary ───────────────────────────────────────────────────────────
 
 function OrderSummary({ pack }: { pack: TopupPack }) {
+  const { t } = useT();
   const subtotal = pack.price_usd;
   const tax = +(subtotal * 0.0).toFixed(2);
   const total = +(subtotal + tax).toFixed(2);
@@ -67,16 +69,16 @@ function OrderSummary({ pack }: { pack: TopupPack }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
       <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
-        Order summary
+        {t.checkout.orderSummary}
       </h2>
 
       <div className="flex items-start justify-between gap-3 pb-4 border-b border-gray-100">
         <div>
           <p className="font-semibold text-gray-900">
-            {pack.credits} Qasynda credits
+            {interpolate(t.checkout.qasyndaCredits, { credits: pack.credits })}
           </p>
           <p className="text-xs text-gray-500 mt-0.5">
-            One-time purchase · ${(pack.price_usd / pack.credits).toFixed(3)} per credit
+            {interpolate(t.checkout.oneTimePurchase, { perCredit: (pack.price_usd / pack.credits).toFixed(3) })}
           </p>
         </div>
         <p className="font-semibold text-gray-900 tabular-nums">
@@ -86,17 +88,17 @@ function OrderSummary({ pack }: { pack: TopupPack }) {
 
       <div className="space-y-2 py-4 border-b border-gray-100 text-sm">
         <div className="flex items-center justify-between text-gray-500">
-          <span>Subtotal</span>
+          <span>{t.checkout.subtotal}</span>
           <span className="tabular-nums">${subtotal.toFixed(2)}</span>
         </div>
         <div className="flex items-center justify-between text-gray-500">
-          <span>Tax</span>
+          <span>{t.checkout.tax}</span>
           <span className="tabular-nums">${tax.toFixed(2)}</span>
         </div>
       </div>
 
       <div className="flex items-center justify-between pt-4">
-        <span className="font-semibold text-gray-900">Total due</span>
+        <span className="font-semibold text-gray-900">{t.checkout.totalDue}</span>
         <span className="text-lg font-bold text-gray-900 tabular-nums">
           ${total.toFixed(2)} <span className="text-xs font-medium text-gray-500">USD</span>
         </span>
@@ -108,6 +110,7 @@ function OrderSummary({ pack }: { pack: TopupPack }) {
 // ─── Checkout content ───────────────────────────────────────────────────────
 
 function CheckoutContent() {
+  const { t } = useT();
   const router = useRouter();
   const searchParams = useSearchParams();
   const packId = searchParams.get('pack');
@@ -166,7 +169,7 @@ function CheckoutContent() {
       setPhase('success');
       setTimeout(() => router.push('/dashboard'), 2200);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Payment failed');
+      setError(err instanceof Error ? err.message : t.checkout.title);
       setPhase('idle');
     }
   };
@@ -180,11 +183,11 @@ function CheckoutContent() {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
               <Check className="w-8 h-8 text-green-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-1">Payment successful</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-1">{t.checkout.successTitle}</h2>
             <p className="text-sm text-gray-500 mb-6">
-              {pack.credits} credits have been added to your account.
+              {interpolate(t.checkout.successBody, { credits: pack.credits })}
             </p>
-            <p className="text-xs text-gray-400">Redirecting to your dashboard…</p>
+            <p className="text-xs text-gray-400">{t.checkout.redirecting}</p>
           </div>
         </main>
       </div>
@@ -201,25 +204,25 @@ function CheckoutContent() {
           className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 mb-4 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to packs
+          {t.checkout.backToPacks}
         </button>
 
         <div className="mb-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 inline-flex items-center gap-2">
           <ShieldCheck className="w-4 h-4" />
           <span>
-            <strong>Test mode</strong> — this is a demo checkout. No real card will be charged.
+            <strong>{t.checkout.testMode}</strong> — {t.checkout.testModeDesc}
           </span>
         </div>
 
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Checkout</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{t.checkout.title}</h1>
         <p className="text-sm text-gray-500 mb-8">
-          Secure payment powered by <span className="font-semibold text-gray-700">Qasynda Pay</span>.
+          {t.checkout.subtitle} <span className="font-semibold text-gray-700">Qasynda Pay</span>.
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
           {/* Payment form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            <Section title="Contact">
+            <Section title={t.checkout.contact}>
               <Field label="Email">
                 <Input
                   type="email"
@@ -232,13 +235,13 @@ function CheckoutContent() {
               </Field>
             </Section>
 
-            <Section title="Payment method">
+            <Section title={t.checkout.paymentMethod}>
               <div className="flex items-center gap-2 px-4 py-3 bg-brand-50 border border-brand-100 rounded-xl mb-4">
                 <CreditCard className="w-4 h-4 text-brand-600" />
-                <span className="text-sm font-medium text-brand-700">Card</span>
+                <span className="text-sm font-medium text-brand-700">{t.checkout.card}</span>
               </div>
 
-              <Field label="Card number">
+              <Field label={t.checkout.cardNumber}>
                 <div className="relative">
                   <Input
                     inputMode="numeric"
@@ -257,7 +260,7 @@ function CheckoutContent() {
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Expiry">
+                <Field label={t.checkout.expiry}>
                   <Input
                     inputMode="numeric"
                     autoComplete="cc-exp"
@@ -267,7 +270,7 @@ function CheckoutContent() {
                     maxLength={5}
                   />
                 </Field>
-                <Field label="CVC">
+                <Field label={t.checkout.cvc}>
                   <Input
                     inputMode="numeric"
                     autoComplete="cc-csc"
@@ -281,20 +284,20 @@ function CheckoutContent() {
                 </Field>
               </div>
 
-              <Field label="Name on card">
+              <Field label={t.checkout.nameOnCard}>
                 <Input
                   required
                   autoComplete="cc-name"
-                  placeholder="Full name"
+                  placeholder={t.checkout.fullName}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
               </Field>
             </Section>
 
-            <Section title="Billing address">
+            <Section title={t.checkout.billingAddress}>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Country">
+                <Field label={t.checkout.country}>
                   <select
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
@@ -310,7 +313,7 @@ function CheckoutContent() {
                     <option value="OTHER">Other</option>
                   </select>
                 </Field>
-                <Field label="Postal code">
+                <Field label={t.checkout.postalCode}>
                   <Input
                     placeholder="050000"
                     value={postal}
@@ -335,19 +338,19 @@ function CheckoutContent() {
               {phase === 'processing' ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Processing payment…
+                  {t.checkout.processingPayment}
                 </>
               ) : (
                 <>
                   <Lock className="w-4 h-4" />
-                  Pay ${pack.price_usd.toFixed(2)}
+                  {interpolate(t.checkout.payAmount, { amount: pack.price_usd.toFixed(2) })}
                 </>
               )}
             </button>
 
             <p className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
               <Lock className="w-3 h-3" />
-              Encrypted and secure. Your card info never touches our servers.
+              {t.checkout.encrypted}
             </p>
           </form>
 
@@ -355,8 +358,7 @@ function CheckoutContent() {
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <OrderSummary pack={pack} />
             <p className="mt-4 text-[11px] leading-relaxed text-gray-400 text-center">
-              By confirming, you agree to Qasynda&apos;s Terms of Service. Credits are
-              non-refundable except where required by law.
+              {t.checkout.termsNote}
             </p>
           </aside>
         </div>

@@ -14,6 +14,7 @@ import app.models.user  # noqa: F401, E402 — registers models with Base.metada
 import app.models.generation  # noqa: F401, E402
 import app.models.coach  # noqa: F401, E402
 import app.models.lead  # noqa: F401, E402
+import app.models.catalogue  # noqa: F401, E402
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)

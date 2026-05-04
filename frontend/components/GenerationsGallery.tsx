@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { Plus, RefreshCw } from 'lucide-react';
 import GenerationCard from '@/components/GenerationCard';
 import { api } from '@/lib/api';
+import { useT, interpolate } from '@/lib/i18n';
 import type { Generation, GenerationsListResponse } from '@/lib/types';
 
 export interface GenerationsGalleryHandle {
@@ -37,6 +38,7 @@ const GenerationsGallery = forwardRef<GenerationsGalleryHandle, GenerationsGalle
     },
     ref,
   ) {
+    const { t } = useT();
     const router = useRouter();
     const [generations, setGenerations] = useState<Generation[]>([]);
     const [loading, setLoading] = useState(true);
@@ -61,12 +63,12 @@ const GenerationsGallery = forwardRef<GenerationsGalleryHandle, GenerationsGalle
         return data;
       } catch (err) {
         if (!mountedRef.current) throw err;
-        setError(err instanceof Error ? err.message : 'Failed to load generations.');
+        setError(err instanceof Error ? err.message : t.gallery.failedToLoad);
         throw err;
       } finally {
         if (mountedRef.current) setLoading(false);
       }
-    }, [limit]);
+    }, [limit, t]);
 
     const poll = useCallback(async () => {
       try {
@@ -108,14 +110,17 @@ const GenerationsGallery = forwardRef<GenerationsGalleryHandle, GenerationsGalle
       setGenerations((prev) => prev.filter((g) => g.id !== id));
     };
 
+    const countLabel =
+      generations.length === 1
+        ? interpolate(t.gallery.generationCount, { n: generations.length })
+        : interpolate(t.gallery.generationCountPlural, { n: generations.length });
+
     return (
       <div>
         {(showRefreshButton || showCount) && (
           <div className="flex items-center justify-between mb-4">
             {showCount ? (
-              <p className="text-sm text-gray-500">
-                {generations.length} generation{generations.length !== 1 ? 's' : ''}
-              </p>
+              <p className="text-sm text-gray-500">{countLabel}</p>
             ) : (
               <span />
             )}
@@ -155,7 +160,7 @@ const GenerationsGallery = forwardRef<GenerationsGalleryHandle, GenerationsGalle
               onClick={() => poll()}
               className="mt-4 text-sm text-brand-600 hover:underline"
             >
-              Try again
+              {t.gallery.tryAgain}
             </button>
           </div>
         )}
@@ -165,16 +170,16 @@ const GenerationsGallery = forwardRef<GenerationsGalleryHandle, GenerationsGalle
             <div className="w-14 h-14 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Plus className="w-6 h-6 text-brand-400" />
             </div>
-            <h3 className="font-semibold text-gray-800 mb-1">No generations yet</h3>
+            <h3 className="font-semibold text-gray-800 mb-1">{t.gallery.noGenerationsTitle}</h3>
             <p className="text-sm text-gray-400 mb-6">
-              Create your first AI image to get started.
+              {t.gallery.noGenerationsBody}
             </p>
             <button
               onClick={() => router.push('/generate?mode=marketplace')}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-medium hover:bg-brand-700 transition-colors"
             >
               <Plus className="w-4 h-4" />
-              New Generation
+              {t.gallery.newGeneration}
             </button>
           </div>
         )}

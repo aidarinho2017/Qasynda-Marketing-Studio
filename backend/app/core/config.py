@@ -56,12 +56,25 @@ class Settings(BaseSettings):
     LEAD_CLASSIFIER_MODEL: str = "gpt-4o-mini"
     LEAD_ENRICHER_MODEL: str = "gpt-4o-mini"
 
+    # Admin — comma-separated or JSON array of emails that are auto-elevated to admin on login.
+    ADMIN_EMAILS: list[str] = []
+
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
     @classmethod
     def parse_cors_origins(cls, v: str | list) -> list[str]:
         if isinstance(v, str):
             return json.loads(v)
         return v
+
+    @field_validator("ADMIN_EMAILS", mode="before")
+    @classmethod
+    def parse_admin_emails(cls, v: str | list) -> list[str]:
+        if isinstance(v, str):
+            v = v.strip()
+            if v.startswith("["):
+                return json.loads(v)
+            return [e.strip().lower() for e in v.split(",") if e.strip()]
+        return [e.lower() for e in v]
 
 
 settings = Settings()

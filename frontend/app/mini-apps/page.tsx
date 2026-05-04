@@ -6,8 +6,10 @@ import Link from 'next/link';
 import { ArrowRight, Sparkles, Smile, Crown } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { isAuthenticated } from '@/lib/auth';
+import { useT } from '@/lib/i18n';
 
 export default function MiniAppsPage() {
+  const { t } = useT();
   const router = useRouter();
 
   useEffect(() => {
@@ -22,13 +24,13 @@ export default function MiniAppsPage() {
         <div className="mb-10">
           <div className="flex items-center gap-2 text-brand-600 mb-2">
             <Sparkles className="w-5 h-5" />
-            <span className="text-sm font-semibold uppercase tracking-wide">Mini Apps</span>
+            <span className="text-sm font-semibold uppercase tracking-wide">{t.miniApps.label}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            Fun mini apps
+            {t.miniApps.title}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Quick AI tools beyond marketplace generation. More coming soon.
+            {t.miniApps.subtitle}
           </p>
         </div>
 
@@ -36,18 +38,28 @@ export default function MiniAppsPage() {
           <MiniAppCard
             href="/mini-apps/fat-maker"
             icon={<Smile className="w-6 h-6 text-brand-600" />}
-            title="Fat Maker"
-            description="Upload a photo of your friend and watch them get gradually rounder. Just for laughs."
+            title={t.miniApps.fatMakerTitle}
+            description={t.miniApps.fatMakerDesc}
           />
           <MiniAppCard
             href="/mini-apps/chess"
             icon={<Crown className="w-6 h-6 text-brand-600" />}
-            title="Chess"
-            description="Turn your friend into a chess piece. Pawn them, knight them, or make them king."
+            title={t.miniApps.chessTitle}
+            description={t.miniApps.chessDesc}
           />
         </div>
       </main>
     </div>
+  );
+}
+
+function OpenLabel() {
+  const { t } = useT();
+  return (
+    <span className="inline-flex items-center gap-1 text-sm font-medium text-brand-600 group-hover:gap-2 transition-all">
+      {t.miniApps.open}
+      <ArrowRight className="w-4 h-4" />
+    </span>
   );
 }
 
@@ -72,10 +84,7 @@ function MiniAppCard({
       </div>
       <h2 className="text-lg font-semibold text-gray-900 mb-1">{title}</h2>
       <p className="text-sm text-gray-500 leading-relaxed mb-4">{description}</p>
-      <span className="inline-flex items-center gap-1 text-sm font-medium text-brand-600 group-hover:gap-2 transition-all">
-        Open
-        <ArrowRight className="w-4 h-4" />
-      </span>
+      <OpenLabel />
     </Link>
   );
 }

@@ -6,12 +6,14 @@ import Link from 'next/link';
 import { ArrowRight, Plus, Target } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { isAuthenticated } from '@/lib/auth';
+import { useT, interpolate } from '@/lib/i18n';
 import { leadApi } from './lib/leadApi';
 import { ACTIVE_STATUSES, type LeadCampaignSummary } from './lib/leadTypes';
 
 const POLL_INTERVAL_MS = 5000;
 
 export default function LeadSearchPage() {
+  const { t } = useT();
   const router = useRouter();
   const [campaigns, setCampaigns] = useState<LeadCampaignSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +45,7 @@ export default function LeadSearchPage() {
       }
     } catch (err) {
       if (!mountedRef.current) return;
-      setError(err instanceof Error ? err.message : 'Failed to load campaigns.');
+      setError(err instanceof Error ? err.message : t.leadSearch.loadingCampaigns);
     } finally {
       if (mountedRef.current) setLoading(false);
     }
@@ -66,12 +68,10 @@ export default function LeadSearchPage() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3">
               <Target className="w-7 h-7 text-brand-600" />
-              Lead Search
+              {t.leadSearch.title}
             </h1>
             <p className="text-sm text-gray-500 mt-2 max-w-2xl">
-              Describe your ideal customer. Our AI picks the best free channels
-              (Reddit, YouTube, Hacker News) where they actually post buying
-              signals — and surfaces the high-intent ones for you.
+              {t.leadSearch.subtitle}
             </p>
           </div>
           <Link
@@ -79,7 +79,7 @@ export default function LeadSearchPage() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium shadow-sm shrink-0"
           >
             <Plus className="w-4 h-4" />
-            New campaign
+            {t.leadSearch.newCampaign}
           </Link>
         </div>
 
@@ -90,7 +90,7 @@ export default function LeadSearchPage() {
         ) : null}
 
         {loading ? (
-          <p className="text-sm text-gray-500">Loading campaigns…</p>
+          <p className="text-sm text-gray-500">{t.leadSearch.loadingCampaigns}</p>
         ) : campaigns.length === 0 ? (
           <EmptyState />
         ) : (
@@ -106,20 +106,20 @@ export default function LeadSearchPage() {
 }
 
 function EmptyState() {
+  const { t } = useT();
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center">
       <Target className="w-10 h-10 text-brand-500 mx-auto mb-4" />
-      <h3 className="text-lg font-semibold text-gray-900">No campaigns yet</h3>
+      <h3 className="text-lg font-semibold text-gray-900">{t.leadSearch.noCampaignsTitle}</h3>
       <p className="text-sm text-gray-500 mt-1 mb-5 max-w-sm mx-auto">
-        Start by describing your ICP. We&apos;ll analyze it and refund your
-        credits if no free channel fits.
+        {t.leadSearch.noCampaignsBody}
       </p>
       <Link
         href="/lead-search/new"
         className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium"
       >
         <Plus className="w-4 h-4" />
-        Create your first campaign
+        {t.leadSearch.createFirst}
       </Link>
     </div>
   );
@@ -150,42 +150,49 @@ function CampaignRow({ campaign }: { campaign: LeadCampaignSummary }) {
         <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-brand-500 mt-1 shrink-0" />
       </div>
 
-      {isActive ? (
-        <div className="mt-3">
-          <div className="flex justify-between items-center text-xs text-gray-500 mb-1">
-            <span>{campaign.progress_label || 'Working…'}</span>
-            <span>{campaign.progress}%</span>
-          </div>
-          <div className="h-1.5 bg-gray-100 rounded overflow-hidden">
-            <div
-              className="h-full bg-brand-500 transition-all"
-              style={{ width: `${campaign.progress}%` }}
-            />
-          </div>
-        </div>
-      ) : (
-        <div className="mt-3 text-xs text-gray-500 flex items-center gap-3">
-          <span>
-            {campaign.leads_found} / {campaign.leads_target} leads
-          </span>
-          {campaign.credits_charged > 0 ? (
-            <span>· {campaign.credits_charged} credits</span>
-          ) : null}
-        </div>
-      )}
+      <CampaignProgress campaign={campaign} isActive={isActive} />
     </Link>
   );
 }
 
+function CampaignProgress({ campaign, isActive }: { campaign: LeadCampaignSummary; isActive: boolean }) {
+  const { t } = useT();
+  if (isActive) {
+    return (
+      <div className="mt-3">
+        <div className="flex justify-between items-center text-xs text-gray-500 mb-1">
+          <span>{campaign.progress_label || t.leadSearch.working}</span>
+          <span>{campaign.progress}%</span>
+        </div>
+        <div className="h-1.5 bg-gray-100 rounded overflow-hidden">
+          <div
+            className="h-full bg-brand-500 transition-all"
+            style={{ width: `${campaign.progress}%` }}
+          />
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="mt-3 text-xs text-gray-500 flex items-center gap-3">
+      <span>{interpolate(t.leadSearch.leadsFound, { found: campaign.leads_found, target: campaign.leads_target })}</span>
+      {campaign.credits_charged > 0 ? (
+        <span>{interpolate(t.leadSearch.creditsCharged, { n: campaign.credits_charged })}</span>
+      ) : null}
+    </div>
+  );
+}
+
 function StatusPill({ status }: { status: LeadCampaignSummary['status'] }) {
+  const { t } = useT();
   const config: Record<LeadCampaignSummary['status'], { label: string; cls: string }> = {
-    pending: { label: 'Queued', cls: 'bg-gray-100 text-gray-700' },
-    selecting_channels: { label: 'Picking channels', cls: 'bg-brand-50 text-brand-700' },
-    discovering: { label: 'Scanning', cls: 'bg-brand-50 text-brand-700' },
-    enriching: { label: 'Scoring', cls: 'bg-brand-50 text-brand-700' },
-    completed: { label: 'Completed', cls: 'bg-emerald-50 text-emerald-700' },
-    refused: { label: 'Refunded · weak signal', cls: 'bg-amber-50 text-amber-700' },
-    failed: { label: 'Failed · refunded', cls: 'bg-red-50 text-red-700' },
+    pending: { label: t.leadSearch.statusQueued, cls: 'bg-gray-100 text-gray-700' },
+    selecting_channels: { label: t.leadSearch.statusPickingChannels, cls: 'bg-brand-50 text-brand-700' },
+    discovering: { label: t.leadSearch.statusScanning, cls: 'bg-brand-50 text-brand-700' },
+    enriching: { label: t.leadSearch.statusScoring, cls: 'bg-brand-50 text-brand-700' },
+    completed: { label: t.leadSearch.statusCompleted, cls: 'bg-emerald-50 text-emerald-700' },
+    refused: { label: t.leadSearch.statusRefused, cls: 'bg-amber-50 text-amber-700' },
+    failed: { label: t.leadSearch.statusFailed, cls: 'bg-red-50 text-red-700' },
   };
   const { label, cls } = config[status];
   return (
