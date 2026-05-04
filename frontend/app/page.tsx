@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import Image from 'next/image';
-import { Check, Layers, Zap, Clock, Store, User, Building2, ArrowRight } from 'lucide-react';
+import { Check, Layers, Zap, Clock, Store, User, Building2, ArrowRight, MessageSquare, Target, LayoutGrid } from 'lucide-react';
 import { api } from '@/lib/api';
 import { setToken, setUser, isAuthenticated } from '@/lib/auth';
 import { TOPUP_PACKS } from '@/lib/credits';
@@ -101,6 +101,7 @@ export default function LandingPage() {
         <HowItWorks />
         <ExampleSection />
         <Features />
+        <MoreTools onClick={openAuth} />
         <WhoItsFor />
         <Pricing onClick={openAuth} />
         <Trust />
@@ -362,6 +363,81 @@ function Features() {
   );
 }
 
+// ─── More Tools ──────────────────────────────────────────────────────────────
+
+function MoreTools({ onClick }: { onClick: () => void }) {
+  const { t } = useT();
+  const tools = [
+    {
+      Icon: MessageSquare,
+      name: t.landing.growthManagerName,
+      desc: t.landing.growthManagerDesc,
+      cta: t.landing.growthManagerCta,
+      badge: null,
+    },
+    {
+      Icon: Target,
+      name: t.landing.leadSearchName,
+      desc: t.landing.leadSearchDesc,
+      cta: t.landing.leadSearchCta,
+      badge: t.landing.leadSearchBadge,
+    },
+    {
+      Icon: LayoutGrid,
+      name: t.landing.catalogueName,
+      desc: t.landing.catalogueDesc,
+      cta: t.landing.catalogueCta,
+      badge: null,
+    },
+  ];
+
+  return (
+    <section className="border-b border-gray-100">
+      <div className="max-w-6xl mx-auto px-6 py-20">
+        <div className="max-w-2xl mb-12">
+          <h2 className="text-3xl font-semibold tracking-tight text-gray-900">
+            {t.landing.moreToolsTitle}
+          </h2>
+          <p className="mt-4 text-base text-gray-600 leading-relaxed">
+            {t.landing.moreToolsSubtitle}
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {tools.map(({ Icon, name, desc, cta, badge }) => (
+            <div key={name} className="flex flex-col rounded-xl border border-gray-200 p-6 bg-white">
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center mb-4 shrink-0"
+                style={{ backgroundColor: 'rgba(137,243,54,0.12)' }}
+              >
+                <Icon className="w-5 h-5" style={{ color: BRAND_GREEN }} />
+              </div>
+
+              <div className="flex items-start gap-2 mb-2">
+                <h3 className="text-base font-semibold text-gray-900">{name}</h3>
+                {badge && (
+                  <span className="shrink-0 mt-0.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                    {badge}
+                  </span>
+                )}
+              </div>
+
+              <p className="text-sm text-gray-600 leading-relaxed flex-1">{desc}</p>
+
+              <button
+                onClick={onClick}
+                className="mt-6 w-full py-2 px-4 rounded-md text-sm font-semibold border border-gray-200 text-gray-700 hover:border-gray-400 hover:text-gray-900 transition-all"
+              >
+                {cta} →
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── Who It's For ────────────────────────────────────────────────────────────
 
 function WhoItsFor() {
@@ -372,7 +448,7 @@ function WhoItsFor() {
     { Icon: Building2, text: t.landing.who3 },
   ];
   return (
-    <section className="border-b border-gray-100">
+    <section className="border-b border-gray-100 bg-gray-50">
       <div className="max-w-3xl mx-auto px-6 py-20">
         <h2 className="text-3xl font-semibold tracking-tight text-gray-900">
           {t.landing.whoTitle}
@@ -417,7 +493,7 @@ function Pricing({ onClick }: { onClick: () => void }) {
   };
 
   return (
-    <section className="border-b border-gray-100 bg-gray-50">
+    <section className="border-b border-gray-100">
       <div className="max-w-6xl mx-auto px-6 py-20">
         <div className="max-w-2xl">
           <h2 className="text-3xl font-semibold tracking-tight text-gray-900">
