@@ -8,6 +8,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=True,
+        env_ignore_empty=True,
     )
 
     # App
@@ -58,18 +59,6 @@ class Settings(BaseSettings):
 
     # Admin — comma-separated or JSON array of emails that are auto-elevated to admin on login.
     ADMIN_EMAILS: list[str] = []
-
-    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
-    @classmethod
-    def parse_cors_origins(cls, v: str | list) -> list[str]:
-        if isinstance(v, str):
-            v = v.strip()
-            if not v:
-                return []
-            if v.startswith("["):
-                return json.loads(v)
-            return [o.strip() for o in v.split(",") if o.strip()]
-        return v
 
     @field_validator("ADMIN_EMAILS", mode="before")
     @classmethod
