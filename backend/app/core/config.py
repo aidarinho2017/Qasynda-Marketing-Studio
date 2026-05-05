@@ -63,7 +63,12 @@ class Settings(BaseSettings):
     @classmethod
     def parse_cors_origins(cls, v: str | list) -> list[str]:
         if isinstance(v, str):
-            return json.loads(v)
+            v = v.strip()
+            if not v:
+                return []
+            if v.startswith("["):
+                return json.loads(v)
+            return [o.strip() for o in v.split(",") if o.strip()]
         return v
 
     @field_validator("ADMIN_EMAILS", mode="before")
